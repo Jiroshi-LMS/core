@@ -1,11 +1,13 @@
 from django.urls import path
 from rest_framework import routers
 
-from .views import InstructorsViewSet
+from . import views
 
 router = routers.DefaultRouter()
-router.register(r'instructors', InstructorsViewSet)
+router.register(r'instructor', views.InstructorViewSet)
 
-urlpatterns = []
+urlpatterns = [
+    path('', views.TestRouteView.as_view(), name='test-route'),
+]
 
 urlpatterns += router.urls
