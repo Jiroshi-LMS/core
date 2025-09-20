@@ -9,6 +9,7 @@ router.register(r'instructor', views.InstructorViewSet)
 urlpatterns = [
     # Auth
     path('instructor/token/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
+    path('instructor/logout/', views.LogoutInstructorView.as_view(), name='logout'),
 ]
 
 urlpatterns += router.urls

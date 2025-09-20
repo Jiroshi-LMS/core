@@ -1,4 +1,5 @@
 import structlog
+import traceback
 
 from core.constants import ENV, CommonErrors
 from core.decorators import handle_exceptions
@@ -167,7 +168,14 @@ class LogoutInstructorView(APIView):
             response.delete_cookie('instructor_refresh_token')
             return response
 
-        except Exception:
+        except Exception as e:
+            traceback_str = traceback.format_exc()
+            logger.error(
+                "instructor_logout_failed",
+                error=str(e),
+                log_type="error",
+                extra={'stack': traceback_str}
+            )
             response = Res(
                 status.HTTP_400_BAD_REQUEST, False,
                 msg="Invalid refresh token."
