@@ -7,7 +7,8 @@ router = routers.DefaultRouter()
 router.register(r'instructor', views.InstructorViewSet)
 
 urlpatterns = [
-    path('', views.TestRouteView.as_view(), name='test-route'),
+    # Auth
+    path('instructor/token/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 urlpatterns += router.urls

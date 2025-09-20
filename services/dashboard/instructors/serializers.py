@@ -16,3 +16,15 @@ class InstructorSerializer(serializers.ModelSerializer):
             'full_name', 'username', 'email', 'password', 'country_code', 'phone_number'
         ]
         read_only_fields = ['id', 'uuid', 'created_at', 'updated_at', 'deleted_at']
+
+
+class InstructorLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+
+    class Meta:
+        model = Instructor
+        fields = [
+            'username', 'password'
+        ]
+        read_only_fields = ['username']

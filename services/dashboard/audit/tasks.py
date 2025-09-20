@@ -37,7 +37,7 @@ def cleanup_old_audit_logs():
 
 
 @shared_task
-def create_audit_log(user_id, action, resource_type, resource_id=None, 
+def create_audit_log(instructor_id, action, resource_type, resource_id=None, 
                     resource_name=None, description="", ip_address=None, 
                     user_agent=None, changes=None, metadata=None):
     """
@@ -45,16 +45,16 @@ def create_audit_log(user_id, action, resource_type, resource_id=None,
     """
     try:
         from .models import AuditLog
-        from apps.users.models import User
-        user = None
-        if user_id:
+        from instructors.models import Instructor
+        instructor = None
+        if instructor_id:
             try:
-                user = User.objects.get(id=user_id)
-            except User.DoesNotExist:
+                instructor = Instructor.objects.get(id=instructor_id)
+            except Instructor.DoesNotExist:
                 pass
         
         audit_log = AuditLog.objects.create(
-            user=user,
+            instructor=instructor,
             action=action,
             resource_type=resource_type,
             resource_id=str(resource_id) if resource_id else None,
@@ -69,7 +69,7 @@ def create_audit_log(user_id, action, resource_type, resource_id=None,
         logger.info(
             "audit_log_created",
             audit_log_id=str(audit_log.id),
-            user_id=str(user_id) if user_id else None,
+            instructor_id=str(instructor_id) if instructor_id else None,
             action=action,
             resource_type=resource_type
         )
@@ -78,7 +78,7 @@ def create_audit_log(user_id, action, resource_type, resource_id=None,
     except Exception as e:
         logger.error(
             "audit_log_creation_failed",
-            user_id=str(user_id) if user_id else None,
+            instructor_id=str(instructor_id) if instructor_id else None,
             action=action,
             resource_type=resource_type,
             error=str(e)

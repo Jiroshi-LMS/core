@@ -1,6 +1,9 @@
 """
 Enhanced middleware for comprehensive logging and user activity tracking.
 """
+from core.constants import CommonErrors
+from core.helpers import flatten_serializer_errors
+from core.utilities import Res
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import Http404
@@ -8,10 +11,6 @@ from rest_framework import status, serializers
 import structlog
 import traceback
 import functools
-
-from .constants import CommonErrors
-from .helpers import flatten_serializer_errors
-from .utilities.APIResponse import Res
 
 logger = structlog.get_logger(__name__)
 

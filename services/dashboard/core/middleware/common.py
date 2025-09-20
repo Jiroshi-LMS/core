@@ -155,7 +155,7 @@ class APILoggingMiddleware(MiddlewareMixin):
         Track user activity for analytics and security.
         """
         try:
-            from instructors.models import Instructor
+            from instructors.models import InstructorSession
             from audit.tasks import create_audit_log
             
             # Track session activity
@@ -166,10 +166,10 @@ class APILoggingMiddleware(MiddlewareMixin):
 
             session_key = raw_token
             if session_key:
-                Instructor.objects.update_or_create(
+                InstructorSession.objects.update_or_create(
                     session_key=session_key,
                     defaults={
-                        'user': request.user,
+                        'instructor': request.user,
                         'ip_address': self.get_client_ip(request),
                         'user_agent': request.META.get('HTTP_USER_AGENT', ''),
                         'is_active': True,
@@ -180,7 +180,7 @@ class APILoggingMiddleware(MiddlewareMixin):
             # Create audit log for significant actions
             if self.should_audit_action(request, response):
                 create_audit_log.delay(
-                    user_id=str(request.user.id),
+                    instructor=str(request.user.id),
                     action=self.determine_action(request),
                     resource_type=self.determine_resource_type(request),
                     resource_id=self.extract_resource_id(request),
@@ -197,7 +197,7 @@ class APILoggingMiddleware(MiddlewareMixin):
             # Log user activity to ELK
             logger.info(
                 "user_activity",
-                user_id=str(request.user.id),
+                instructor=str(request.user.id),
                 username=request.user.username,
                 action=self.determine_action(request),
                 resource=self.determine_resource_type(request),
@@ -212,7 +212,7 @@ class APILoggingMiddleware(MiddlewareMixin):
             logger.error(
                 "user_activity_tracking_failed",
                 error=str(e),
-                user_id=str(request.user.id) if hasattr(request, 'user') else None,
+                instructor_id=str(request.user.id) if hasattr(request, 'user') else None,
                 log_type="error"
             )
     

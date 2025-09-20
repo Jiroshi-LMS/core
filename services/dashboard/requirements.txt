@@ -17,6 +17,7 @@ psycopg2==2.9.10
 PyJWT==2.10.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
+redis==6.4.0
 six==1.17.0
 sqlparse==0.5.3
 structlog==25.4.0
