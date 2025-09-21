@@ -36,8 +36,8 @@ def cleanup_old_audit_logs():
         raise
 
 
-@shared_task
-def create_audit_log(instructor_id, action, resource_type, resource_id=None, 
+@shared_task(bind=True)
+def create_audit_log(self, instructor_id=None, action=None, resource_type=None, resource_id=None, 
                     resource_name=None, description="", ip_address=None, 
                     user_agent=None, changes=None, metadata=None):
     """

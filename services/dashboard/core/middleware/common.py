@@ -180,7 +180,7 @@ class APILoggingMiddleware(MiddlewareMixin):
             # Create audit log for significant actions
             if self.should_audit_action(request, response):
                 create_audit_log.delay(
-                    instructor=str(request.user.id),
+                    instructor_id=str(request.user.id),
                     action=self.determine_action(request),
                     resource_type=self.determine_resource_type(request),
                     resource_id=self.extract_resource_id(request),

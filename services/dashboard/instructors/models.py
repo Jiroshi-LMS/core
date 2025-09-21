@@ -13,7 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class Instructor(AbstractUser, TimeStampedModel, SoftDeleteMixin):
     full_name = models.CharField(max_length=255)
     country_code = models.CharField(max_length=5, null=True, blank=True)
-    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    phone_number = models.CharField(unique=True, max_length=15, null=True, blank=True)
 
     history = HistoricalRecords()
     
@@ -23,6 +23,23 @@ class Instructor(AbstractUser, TimeStampedModel, SoftDeleteMixin):
 
     def __str__(self):
         return self.username
+    
+
+class InstructorProfile(TimeStampedModel, SoftDeleteMixin):
+    """
+        Instructor Profile and related information.
+    """
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='profiles', unique=True)
+    profile_picture = models.CharField(max_length=255, null=True, blank=True)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+    
+    history = HistoricalRecords()
+    
+    class Meta:
+        db_table = 'instructor_profiles'
+        verbose_name_plural = 'Instructor Profiles'
+        ordering = ['-created_at']
     
 
 class InstructorSession(TimeStampedModel, SoftDeleteMixin):
