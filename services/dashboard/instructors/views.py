@@ -4,6 +4,7 @@ import traceback
 from core.constants import ENV, CommonErrors
 from core.decorators import handle_exceptions
 from core.utilities import Res
+from django.db import transaction
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -115,8 +116,11 @@ class InstructorViewSet(viewsets.ModelViewSet):
         serializer = InstructorProfileSerializer(instructor, data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        profile, created = instructor_selector.create_update_profile(instructor, serializer.validated_data)
-        
+        with transaction.atomic():
+            profile, created = instructor_selector.create_update_profile(instructor, serializer.validated_data)
+            instructor.profile_completion_status = 'partial'
+            instructor.save()
+
         logger.info(
             "instructor_profile_updated",
             instructor_id=str(instructor.id),
