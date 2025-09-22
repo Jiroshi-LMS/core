@@ -1,3 +1,10 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
 
-# Create your views here.
+
+class CourseViewSet(ViewSet):
+    pass
+
+
+class CourseLessonViewSet(ViewSet):
+    pass

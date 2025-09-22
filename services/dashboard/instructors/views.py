@@ -6,8 +6,9 @@ from core.decorators import handle_exceptions
 from core.utilities import Res
 from django.db import transaction
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -107,11 +108,13 @@ class InstructorViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['POST'], url_path='profile')
     @permission_classes([IsAuthenticated])
+    # @parser_classes([MultiPartParser])
     @handle_exceptions
     def set_initial_profile(self, request, *args, **kwargs):
         """
             Set Instructor Profile
         """
+        # TODO: Handle Form Data and Profile Picture
         instructor = instructor_selector.get_by_id(request.user.id)
         serializer = InstructorProfileSerializer(instructor, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -135,6 +138,18 @@ class InstructorViewSet(viewsets.ModelViewSet):
                 'is_created': created,
             },
             msg="Instructor profile updated successfully."
+        ).json()
+    
+
+    @action(detail=False, methods=['GET'], url_path='me')
+    @permission_classes([IsAuthenticated])
+    @handle_exceptions
+    def get_profile(self, request, *args, **kwargs):
+        serializer = self.get_serializer(request.user)
+        return Res(
+            code=status.HTTP_200_OK,
+            data=serializer.data,
+            msg="Instructor retrieved successfully."
         ).json()
 
     

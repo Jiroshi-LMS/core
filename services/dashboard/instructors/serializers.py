@@ -8,14 +8,20 @@ class InstructorSerializer(serializers.ModelSerializer):
     password = serializers.CharField(required=True, write_only=True)
     country_code = serializers.CharField(required=False)
     phone_number = serializers.CharField(required=False)
+    profile_completion_status = serializers.CharField(read_only=True)
+    profile = serializers.SerializerMethodField()
     
     class Meta:
         model = Instructor
         fields = [
-            'id', 'uuid', 'created_at', 'updated_at', 'deleted_at',
-            'full_name', 'username', 'email', 'password', 'country_code', 'phone_number'
+            'uuid', 'created_at',
+            'full_name', 'username', 'email', 'password', 'country_code', 
+            'phone_number', 'profile_completion_status', 'profile'
         ]
-        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at', 'deleted_at']
+        read_only_fields = ['uuid', 'created_at']
+
+    def get_profile(self, obj):
+        return InstructorProfileSerializer(obj, read_only=True).data
 
 
 class InstructorLoginSerializer(serializers.Serializer):
@@ -31,14 +37,14 @@ class InstructorLoginSerializer(serializers.Serializer):
 
 
 class InstructorProfileSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.CharField(required=False)
-    location = serializers.CharField(required=False)
-    bio = serializers.CharField(required=False)
+    profile_picture = serializers.CharField(required=False, default=None)
+    location = serializers.CharField(required=False, default=None)
+    bio = serializers.CharField(required=False, default="")
 
     class Meta:
         model = Instructor
         fields = [
-            'id', 'uuid', 'created_at', 'updated_at', 'deleted_at',
+            'uuid', 'created_at',
             'profile_picture', 'location', 'bio'
         ]
-        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at', 'deleted_at']
+        read_only_fields = ['uuid', 'created_at']
