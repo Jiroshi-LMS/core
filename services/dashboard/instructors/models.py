@@ -11,9 +11,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class Instructor(AbstractUser, TimeStampedModel, SoftDeleteMixin):
+
+    PROFILE_STATUS_CHOICES = [
+        ('complete', _('Complete')),
+        ('pending', _('Pending')),
+        ('partial', _('Partial')),
+    ]
+
     full_name = models.CharField(max_length=255)
     country_code = models.CharField(max_length=5, null=True, blank=True)
     phone_number = models.CharField(unique=True, max_length=15, null=True, blank=True)
+    profile_completion_status = models.CharField(max_length=20, choices=PROFILE_STATUS_CHOICES, default='pending')
 
     history = HistoricalRecords()
     

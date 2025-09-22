@@ -28,3 +28,17 @@ class InstructorLoginSerializer(serializers.Serializer):
             'username', 'password'
         ]
         read_only_fields = ['username']
+
+
+class InstructorProfileSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
+    bio = serializers.CharField(required=False)
+
+    class Meta:
+        model = Instructor
+        fields = [
+            'id', 'uuid', 'created_at', 'updated_at', 'deleted_at',
+            'profile_picture', 'location', 'bio'
+        ]
+        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at', 'deleted_at']

@@ -5,7 +5,7 @@ from core.constants import ENV, CommonErrors
 from core.decorators import handle_exceptions
 from core.utilities import Res
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
@@ -13,7 +13,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .models import Instructor
-from .serializers import InstructorSerializer, InstructorLoginSerializer
+from .serializers import (
+    InstructorSerializer, 
+    InstructorLoginSerializer,
+    InstructorProfileSerializer
+)
 from .selectors import InstructorSelector
 
 
@@ -100,6 +104,72 @@ class InstructorViewSet(viewsets.ModelViewSet):
             'expiry_seconds': ENV.REFRESH_TOKEN_EXP * 24 * 60 * 60
         })
     
+    @action(detail=False, methods=['POST'], url_path='profile')
+    @permission_classes([IsAuthenticated])
+    @handle_exceptions
+    def set_initial_profile(self, request, *args, **kwargs):
+        """
+            Set Instructor Profile
+        """
+        instructor = instructor_selector.get_by_id(request.user.id)
+        serializer = InstructorProfileSerializer(instructor, data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        profile, created = instructor_selector.create_update_profile(instructor, serializer.validated_data)
+        
+        logger.info(
+            "instructor_profile_updated",
+            instructor_id=str(instructor.id),
+            **serializer.validated_data,
+        )
+        
+        return Res(
+            status.HTTP_200_OK, True, 
+            data={
+                'instructor_id': instructor.uuid,
+                'profile_id': profile.uuid,
+                'is_created': created,
+            },
+            msg="Instructor profile updated successfully."
+        ).json()
+
+    
+    @action(detail=False, methods=['POST'], url_path='logout')
+    @permission_classes([IsAuthenticated])
+    @handle_exceptions
+    def logout_view(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('instructor_refresh_token')
+        if not refresh_token:
+            return Res(
+                status.HTTP_401_UNAUTHORIZED, False, 
+                msg=CommonErrors.TOKEN_EXPIRED
+            ).json()
+        
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            response = Res(
+                status.HTTP_200_OK, True,
+                msg="Logged out successfully."
+            ).json()
+            response.delete_cookie('instructor_refresh_token')
+            return response
+
+        except Exception as e:
+            traceback_str = traceback.format_exc()
+            logger.error(
+                "instructor_logout_failed",
+                error=str(e),
+                log_type="error",
+                extra={'stack': traceback_str}
+            )
+            response = Res(
+                status.HTTP_400_BAD_REQUEST, False,
+                msg="Invalid refresh token."
+            ).json()
+            response.delete_cookie('instructor_refresh_token')
+            return response
+    
 
 class CustomTokenRefreshView(TokenRefreshView):
     """
@@ -140,45 +210,3 @@ class CustomTokenRefreshView(TokenRefreshView):
                 status.HTTP_401_UNAUTHORIZED, False, 
                 msg=CommonErrors.TOKEN_EXPIRED
             ).json()
-        
-
-class LogoutInstructorView(APIView):
-    """
-    Logout instructor view.
-    """
-    permission_classes = [IsAuthenticated]
-
-    @handle_exceptions
-    def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get('instructor_refresh_token')
-        if not refresh_token:
-            return Res(
-                status.HTTP_401_UNAUTHORIZED, False, 
-                msg=CommonErrors.TOKEN_EXPIRED
-            ).json()
-        
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-
-            response = Res(
-                status.HTTP_200_OK, True,
-                msg="Logged out successfully."
-            ).json()
-            response.delete_cookie('instructor_refresh_token')
-            return response
-
-        except Exception as e:
-            traceback_str = traceback.format_exc()
-            logger.error(
-                "instructor_logout_failed",
-                error=str(e),
-                log_type="error",
-                extra={'stack': traceback_str}
-            )
-            response = Res(
-                status.HTTP_400_BAD_REQUEST, False,
-                msg="Invalid refresh token."
-            ).json()
-            response.delete_cookie('instructor_refresh_token')
-            return response

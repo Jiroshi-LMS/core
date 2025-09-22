@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from .models import Instructor
+from .models import Instructor, InstructorProfile
 
 class InstructorSelector:
     """
@@ -30,4 +30,17 @@ class InstructorSelector:
             password=valid_instructor_data.get('password'),
             country_code=valid_instructor_data.get('country_code'),
             phone_number=valid_instructor_data.get('phone_number')
+        )
+    
+    def create_update_profile(self, instructor: Instructor, valid_profile_data: dict):
+        """
+        Create or update an instructor profile.
+        """
+        return InstructorProfile.objects.update_or_create(
+            instructor=instructor,
+            defaults={
+                'profile_picture': valid_profile_data.get('profile_picture'),
+                'location': valid_profile_data.get('location'),
+                'bio': valid_profile_data.get('bio'),
+            }
         )
