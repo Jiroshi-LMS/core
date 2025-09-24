@@ -21,6 +21,7 @@ class Course(TimeStampedModel, SoftDeleteMixin):
         verbose_name_plural = 'Courses'
         ordering = ['-created_at']
         unique_together = ('title', 'created_by')
+        
 
 class CourseLesson(TimeStampedModel, SoftDeleteMixin):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
