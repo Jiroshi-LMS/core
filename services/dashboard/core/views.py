@@ -17,6 +17,8 @@ class GetUploadPresignedURL(APIView):
 
     @handle_exceptions
     def post(self, request):
+        # TODO: Handle content_type effectively as 
+        # this may result in unknown errors while uploading images
         content_type = request.data.get('content_type')
         prefix = request.data.get('prefix')
         file_name = request.data.get('file_name')

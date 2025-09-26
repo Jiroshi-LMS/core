@@ -26,3 +26,9 @@ class LessonSelector:
             created_by=created_by,
             course=course
         )
+    
+    def active_lessons(self, course):
+        return CourseLesson.objects.filter(
+            course=course, 
+            access_status='active'
+        )

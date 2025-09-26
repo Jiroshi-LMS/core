@@ -3,10 +3,12 @@ import structlog
 from core.decorators import handle_exceptions
 from core.utilities import Res, CustomPaginator, S3Utils
 from core.constants import ENV
+from django.db.models import Sum
 from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
 
 from .models import Course, CourseLesson
 from .selectors import CourseSelector, LessonSelector
@@ -23,6 +25,9 @@ class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     pagination_class = CustomPaginator
     permission_classes = [IsAuthenticated]
+
+    lookup_field = 'uuid'
+    lookup_value_regex = "[0-9a-f-]+"
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
@@ -46,7 +51,7 @@ class CourseViewSet(ModelViewSet):
         """
             List all courses.
         """
-        queryset = self.filter_queryset(self.get_queryset()).order_by('-created_at')
+        queryset = self.filter_queryset(self.get_queryset()).order_by('-created_at', '-id')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -72,6 +77,31 @@ class CourseViewSet(ModelViewSet):
             data=serializer.data,
             msg="Course retrieved successfully."
         ).json()
+    
+    @action(detail=True, methods=['PATCH'], url_path='toggle-status')
+    @handle_exceptions
+    def toggle_course_activation(self, request, *args, **kwargs):
+        """
+            Mark a course as active.
+        """
+        course = self.get_object()
+        if course.access_status == 'active':
+            course.access_status = 'inactive'
+        else:
+            lesson_count = lesson_selector.active_lessons(course).count()
+            if lesson_count < 1:
+                return Res(
+                    status.HTTP_400_BAD_REQUEST, False, 
+                    msg="Can't set course as active without any lessons."
+                ).json()
+        
+            course.access_status = 'active'
+
+        course.save()
+        return Res(
+            status.HTTP_200_OK, True, 
+            msg="Course status updated successfully."
+        ).json()
 
 
 class CourseLessonViewSet(ModelViewSet):
@@ -79,6 +109,9 @@ class CourseLessonViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CourseLessonSerializer
     pagination_class = CustomPaginator
+
+    lookup_field = 'uuid'
+    lookup_value_regex = "[0-9a-f-]+"
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
@@ -106,7 +139,15 @@ class CourseLessonViewSet(ModelViewSet):
         """
             List all lessons.
         """
-        queryset = self.filter_queryset(self.get_queryset()).order_by('-created_at')
+        course_uuid = request.query_params.get('course_id')
+        if not course_uuid:
+            return Res(
+                status.HTTP_400_BAD_REQUEST, False, 
+                msg="Course ID is required."
+            ).json()
+        course = course_selector.by_uuid(course_uuid)
+        queryset = self.filter_queryset(self.get_queryset()).order_by('-created_at', '-id')
+        queryset = queryset.filter(course=course)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -133,22 +174,35 @@ class CourseLessonViewSet(ModelViewSet):
             msg="Lesson retrieved successfully."
         ).json()
     
-
-class GetUploadLessonURL(APIView):
-
+    @action(detail=True, methods=['PATCH'], url_path='update-lesson-media')
     @handle_exceptions
-    def get(self, request, lesson_uuid):
+    def update_media_key(self, request, *args, **kwargs):
         """
-            Get the upload URL for a lesson.
+            Update the media key of a lesson.
         """
-        url = S3Utils.get_signed_url(
-            ENV.S3_BUCKET, 
-            "dummy_lesson.mp4",
-            isUpload=True
-        )
+        lesson = self.get_object()
+        lesson_media = request.data.get('media_key')
+        media_duration = request.data.get('media_duration')
+        if not lesson_media or not media_duration:
+            return Res(
+                status.HTTP_400_BAD_REQUEST, False, 
+                msg="Missing required fields: media_key, media_duration."
+            ).json()
+        
+        lesson.media_key = lesson_media
+        lesson.duration = media_duration
+        lesson.access_status = 'active'
+        lesson.save()
+
+        course = course_selector.by_uuid(lesson.course.uuid)
+        course_lessons_duration = lesson_selector.active_lessons(course).aggregate(
+            duration=Sum('duration')
+        )['duration']
+        if course_lessons_duration is not None:
+            course.duration = course_lessons_duration
+            course.save()
+
         return Res(
-            data={
-                'url': url
-            },
-            msg="Upload URL retrieved successfully."
+            status.HTTP_200_OK, True, 
+            msg="Media key updated successfully."
         ).json()
