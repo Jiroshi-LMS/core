@@ -17,8 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+BASE_PATH = 'api/v1/dashboard'
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/dashboard/', include('instructors.urls')),
-    path('api/v1/dashboard/', include('courses.urls')),
+    path(f"{BASE_PATH}/internals/", include('core.urls')),
+    path(f"{BASE_PATH}/", include('instructors.urls')),
+    path(f"{BASE_PATH}/courses/", include('courses.urls')),
 ]

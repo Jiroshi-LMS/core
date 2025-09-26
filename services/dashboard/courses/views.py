@@ -1,7 +1,8 @@
 import structlog
 
 from core.decorators import handle_exceptions
-from core.utilities import Res, CustomPaginator
+from core.utilities import Res, CustomPaginator, S3Utils
+from core.constants import ENV
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -20,7 +21,7 @@ lesson_selector = LessonSelector()
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    pagination_class = [CustomPaginator]
+    pagination_class = CustomPaginator
     permission_classes = [IsAuthenticated]
 
     @handle_exceptions
@@ -75,8 +76,9 @@ class CourseViewSet(ModelViewSet):
 
 class CourseLessonViewSet(ModelViewSet):
     queryset = CourseLesson.objects.all()
-    serializer_class = CourseLessonSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = CourseLessonSerializer
+    pagination_class = CustomPaginator
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
@@ -129,4 +131,24 @@ class CourseLessonViewSet(ModelViewSet):
             status.HTTP_200_OK, True, 
             data=serializer.data,
             msg="Lesson retrieved successfully."
+        ).json()
+    
+
+class GetUploadLessonURL(APIView):
+
+    @handle_exceptions
+    def get(self, request, lesson_uuid):
+        """
+            Get the upload URL for a lesson.
+        """
+        url = S3Utils.get_signed_url(
+            ENV.S3_BUCKET, 
+            "dummy_lesson.mp4",
+            isUpload=True
+        )
+        return Res(
+            data={
+                'url': url
+            },
+            msg="Upload URL retrieved successfully."
         ).json()
