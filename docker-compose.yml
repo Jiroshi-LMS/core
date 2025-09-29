@@ -1,0 +1,71 @@
+services:
+  # Redis
+  redis:
+    image: redis:7.0.5-alpine
+    container_name: jiroshi_redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    networks:
+      - jiroshi_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Dashboard Service
+  dashboard:
+    build:
+      context: ./services/dashboard
+      dockerfile: Dockerfile
+    container_name: jiroshi_dashboard
+    env_file:
+      - ./services/dashboard/.env
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/dashboard:/app
+      # - ./services/dashboard/:/app/staticfiles
+      # - backend_media:/app/media
+      # - ./logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - jiroshi_network
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+
+  # Celery Worker
+  celery:
+    build:
+      context: ./services/dashboard
+      dockerfile: Dockerfile
+    container_name: jiroshi_celery
+    command: celery -A dashboard worker -l info
+    env_file:
+      - ./services/dashboard/.env
+    volumes:
+      - ./services/dashboard:/app
+    depends_on:
+      dashboard:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - jiroshi_network
+
+
+volumes:
+  redis_data:
+  # backend_static:
+  # backend_media:
+
+networks:
+  jiroshi_network:
+    driver: bridge

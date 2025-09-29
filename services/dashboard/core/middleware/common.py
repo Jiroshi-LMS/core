@@ -164,7 +164,8 @@ class APILoggingMiddleware(MiddlewareMixin):
             if auth_header and auth_header.startswith("Bearer "):
                 raw_token = auth_header.split(" ")[1]
 
-            session_key = raw_token
+            # session_key = raw_token
+            session_key = None
             if session_key:
                 InstructorSession.objects.update_or_create(
                     session_key=session_key,

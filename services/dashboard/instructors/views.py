@@ -110,11 +110,10 @@ class InstructorViewSet(viewsets.ModelViewSet):
     @permission_classes([IsAuthenticated])
     # @parser_classes([MultiPartParser])
     @handle_exceptions
-    def set_initial_profile(self, request, *args, **kwargs):
+    def set_profile(self, request, *args, **kwargs):
         """
             Set Instructor Profile
         """
-        # TODO: Handle Form Data and Profile Picture
         instructor = instructor_selector.get_by_id(request.user.id)
         serializer = InstructorProfileSerializer(instructor, data=request.data)
         serializer.is_valid(raise_exception=True)

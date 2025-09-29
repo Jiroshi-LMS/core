@@ -23,7 +23,7 @@ class Instructor(AbstractUser, TimeStampedModel, SoftDeleteMixin):
     phone_number = models.CharField(unique=True, max_length=15, null=True, blank=True)
     profile_completion_status = models.CharField(max_length=20, choices=PROFILE_STATUS_CHOICES, default='pending')
 
-    history = HistoricalRecords()
+    # history = HistoricalRecords()
     
     class Meta:
         db_table = 'instructors'
@@ -42,7 +42,7 @@ class InstructorProfile(TimeStampedModel, SoftDeleteMixin):
     location = models.CharField(max_length=255, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     
-    history = HistoricalRecords()
+    # history = HistoricalRecords()
     
     class Meta:
         db_table = 'instructor_profiles'
@@ -91,7 +91,7 @@ class InstructorSession(TimeStampedModel, SoftDeleteMixin):
     is_suspicious = models.BooleanField(default=False)
     failed_attempts = models.IntegerField(default=0)
 
-    history = HistoricalRecords()
+    # history = HistoricalRecords()
     
     class Meta:
         verbose_name = _('Instructor Session')
@@ -158,7 +158,7 @@ class LoginAttempt(TimeStampedModel):
     is_suspicious = models.BooleanField(default=False)
     failure_reason = models.CharField(max_length=200, blank=True)
 
-    history = HistoricalRecords()
+    # history = HistoricalRecords()
     
     class Meta:
         verbose_name = _('Login Attempt')
