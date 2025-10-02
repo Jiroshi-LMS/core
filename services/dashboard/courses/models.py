@@ -43,7 +43,6 @@ class CourseLesson(TimeStampedModel, SoftDeleteMixin):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    thumbnail = models.CharField(max_length=255, null=True, blank=True)
     duration = models.IntegerField(default=0)
     access_status = models.CharField(max_length=20, choices=ACCESS_STATUS_CHOICES, default='draft')
     media_key = models.CharField(max_length=255, null=True, blank=True)

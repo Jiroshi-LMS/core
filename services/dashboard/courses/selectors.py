@@ -26,7 +26,6 @@ class LessonSelector:
         return CourseLesson.objects.create(
             title=validated_data['title'],
             description=validated_data['description'],
-            thumbnail=validated_data['thumbnail'],
             duration=validated_data['duration'],
             created_by=created_by,
             course=course

@@ -10,7 +10,7 @@ from .models import Course, CourseLesson
 class CourseLessonSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
-    duration = serializers.IntegerField(required=False, default=None)
+    duration = serializers.IntegerField(required=False, default=0)
     access_status = serializers.CharField(read_only=True)
     media_key = serializers.CharField(required=False, default=None, write_only=True)
     course_uuid = serializers.UUIDField(write_only=True)

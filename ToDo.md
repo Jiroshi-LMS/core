@@ -6,18 +6,16 @@
 
 # Dashboard Services
 
-- Lesson Video Upload
-- Lesson listing
+- Lesson Reference materials Creation
+- Lesson Reference materials Retrieval/Download
+- Lesson Reference materials Deletion
+- Lesson Reference materials Updation
 - Lesson Retrieval
 - Lesson Updation
     - Update Lesson Media
     - Update Lesson Info
 - Lesson Deletion
 
-- Lesson Reference materials Creation
-- Lesson Reference materials Retrieval/Download
-- Lesson Reference materials Deletion
-- Lesson Reference materials Updation
 ---
 - Update Instructor Information
 - Delete Instructor Profile
