@@ -36,9 +36,8 @@ def handle_exceptions(view_func):
             return Res(status.HTTP_404_NOT_FOUND, False, msg="Not found").json()
         except IntegrityError as e:
             err_stack = traceback.format_exc()
-            print("\nCAUSE: ", e.__cause__)
             logger.error("integrity_error", error=str(e), extra={'path': request.path, 'stack': err_stack})
-            return Res(status.HTTP_400_BAD_REQUEST, False, msg="Data already exists").json()
+            return Res(status.HTTP_400_BAD_REQUEST, False, msg="Data Integrity Error").json()
         except Exception as e:
             err_stack = traceback.format_exc()
             logger.exception("unexpected_server_error", error=str(e), extra={'path': request.path, 'stack': err_stack})

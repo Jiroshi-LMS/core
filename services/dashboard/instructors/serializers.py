@@ -1,4 +1,4 @@
-from core.constants import DefaultObjectKeys, ENV, Units
+from core.constants import DefaultObjectKeys, ENV, Units, Urls
 from core.utilities import S3Utils
 from rest_framework import serializers
 from .models import Instructor, InstructorProfile
@@ -59,8 +59,4 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
         profile_picture = obj.profile_picture
         if not profile_picture:
             profile_picture = DefaultObjectKeys.PROFILE_PICTURE
-        return S3Utils.get_signed_url(
-            bucket_name=ENV.S3_STATIC_BUCKET,
-            object_key=profile_picture,
-            expiration=Units.DAY,
-        )
+        return Urls.STATIC_S3_URL + profile_picture

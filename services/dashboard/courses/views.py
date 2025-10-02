@@ -3,6 +3,8 @@ import structlog
 from core.decorators import handle_exceptions
 from core.utilities import Res, CustomPaginator, S3Utils
 from core.constants import ENV
+from django.core.serializers import serialize
+from django.db import transaction
 from django.db.models import Sum
 from rest_framework import status
 from rest_framework.decorators import action
@@ -100,6 +102,48 @@ class CourseViewSet(ModelViewSet):
         return Res(
             status.HTTP_200_OK, True, 
             msg="Course status updated successfully."
+        ).json()
+
+    @handle_exceptions
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        course = self.get_object()
+        validated_data = serializer.validated_data
+
+        with transaction.atomic():
+            if 'thumbnail' in validated_data and course.thumbnail != validated_data.get('thumbnail'):
+                S3Utils.delete_via_object_key(
+                    object_keys=[course.thumbnail],
+                    bucket_name=ENV.S3_STATIC_BUCKET
+                )
+            if 'access_status' in validated_data and course.access_status != validated_data.get('access_status'):
+                lesson_count = lesson_selector.active_lessons(course).count()
+                if lesson_count < 1:
+                    return Res(
+                        status.HTTP_400_BAD_REQUEST, False,
+                        msg="Can't set course as active without any lessons."
+                    ).json()
+            course_selector.update(validated_data, course)
+        return Res(
+            status.HTTP_200_OK, True,
+            data=validated_data,
+            msg="Course updated successfully."
+        ).json()
+
+    @handle_exceptions
+    def destroy(self, request, *args, **kwargs):
+        # TODO: Test again after implementing lessons
+        course = self.get_object()
+        lessons = lesson_selector.all_lessons(course)
+
+        course.delete()
+        for lesson in lessons:
+            lesson.delete()
+
+        return Res(
+            status.HTTP_501_NOT_IMPLEMENTED, False,
+            msg="Course deleted successfully."
         ).json()
 
 

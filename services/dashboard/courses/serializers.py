@@ -1,4 +1,4 @@
-from core.constants import DefaultObjectKeys, ENV
+from core.constants import DefaultObjectKeys, ENV, Urls
 from core.utilities import S3Utils
 from instructors.models import Instructor
 from rest_framework import serializers
@@ -28,12 +28,12 @@ class CourseSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
     thumbnail = serializers.CharField(required=True, write_only=True)
-    duration = serializers.IntegerField(required=False, default=None)
+    duration = serializers.IntegerField(required=False, default=0)
     access_status = serializers.CharField(read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(
         read_only=True
     )
-    thumbnail_url = serializers.SerializerMethodField()
+    thumbnail_url = serializers.SerializerMethodField(read_only=True)
     enrollments = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -48,10 +48,7 @@ class CourseSerializer(serializers.ModelSerializer):
         thumbnail = obj.thumbnail
         if not thumbnail:
             thumbnail = DefaultObjectKeys.THUMBNAIL
-        return S3Utils.get_signed_url(
-            bucket_name=ENV.S3_STATIC_BUCKET,
-            object_key=thumbnail,
-        )
+        return Urls.STATIC_S3_URL + thumbnail
 
     def get_enrollments(self, obj):
         # TODO: Implement Enrollments Count
@@ -78,10 +75,7 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
         thumbnail = obj.thumbnail
         if not thumbnail:
             thumbnail = DefaultObjectKeys.THUMBNAIL
-        return S3Utils.get_signed_url(
-            bucket_name=ENV.S3_STATIC_BUCKET,
-            object_key=thumbnail,
-        )
+        return Urls.STATIC_S3_URL + thumbnail
 
     def get_enrollments(self, obj):
         # TODO: Implement Enrollments

@@ -39,7 +39,8 @@ class S3Utils:
                 ExpiresIn=expiration
             )
             return url
-        except ClientError as e:
+        except Exception as e:
+            print(traceback.format_exc())
             logger.error(
                 "get_signed_url_failed",
                 error=str(e),
@@ -47,3 +48,31 @@ class S3Utils:
                 extra={'stack': traceback.format_exc()}
             )
             return None
+
+    @staticmethod
+    def delete_via_object_key(
+            object_keys: list[str],
+            bucket_name=ENV.S3_BUCKET,
+    ):
+        """
+        Delete an S3 object using object key.
+        """
+        try:
+            s3_client = boto3.client(
+                's3', region_name=ENV.AWS_REGION,
+                config=client.Config(signature_version='s3v4'))
+            response = s3_client.delete_objects(
+                Bucket=bucket_name,
+                Delete={
+                    "Objects": [{"Key": key} for key in object_keys]
+                }
+            )
+            logger.info("object_keys_deleted", object_keys=object_keys, response=response)
+        except Exception as e:
+            print(traceback.format_exc())
+            logger.error(
+                "failed_to_delete_object",
+                error=str(e),
+                log_type="error",
+                extra={'stack': traceback.format_exc()}
+            )

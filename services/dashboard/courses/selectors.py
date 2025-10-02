@@ -13,7 +13,12 @@ class CourseSelector:
             duration=validated_data['duration'],
             created_by=created_by
         )
-    
+
+    def update(self, validated_data, course):
+        for key, value in validated_data.items():
+            setattr(course, key, value)
+        course.save()
+        return course
 
 class LessonSelector:
     
@@ -26,6 +31,9 @@ class LessonSelector:
             created_by=created_by,
             course=course
         )
+
+    def all_lessons(self, course):
+        return CourseLesson.all_objects.filter(course=course)
     
     def active_lessons(self, course):
         return CourseLesson.objects.filter(
