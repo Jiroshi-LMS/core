@@ -45,3 +45,11 @@ class Units():
     KB = 1024
     MB = 1024 * KB
     REQUEST_TIMEOUT = 30
+    MINUTE = 60
+    HOUR = 60 * MINUTE
+    DAY = 24 * HOUR
+
+
+class Keywords():
+    PRIVATE = "pvt"
+    PUBLIC = "pub"

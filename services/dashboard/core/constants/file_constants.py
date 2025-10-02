@@ -12,3 +12,4 @@ class DefaultObjectKeys():
         Default Object Keys
     """
     THUMBNAIL = "defaults/thumbnail-default.jpg"
+    PROFILE_PICTURE = "defaults/profile-default.png"

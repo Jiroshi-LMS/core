@@ -6,10 +6,6 @@
 
 # Dashboard Services
 
-- Update Instructor Information
-- Update Instructor Profile
-- Delete Instructor Profile
-
 - Course Retrieval
     - Define new serializer for retrieving course and its lessons
 - Course Updation
@@ -19,6 +15,8 @@
     - Course Activation
 - Course Deletion
 
+--- 
+- Lesson Video Upload
 - Lesson listing
 - Lesson Retrieval
 - Lesson Updation
@@ -30,6 +28,14 @@
 - Lesson Reference materials Retrieval/Download
 - Lesson Reference materials Deletion
 - Lesson Reference materials Updation
+---
+- Update Instructor Information
+- Update Instructor Profile
+- Delete Instructor Profile
+
+- Generate Unique API Key for Instructor
+- API to update Instructor Information
+- API to delete Instructor Password
 
 # Misc
 

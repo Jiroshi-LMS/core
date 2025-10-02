@@ -12,8 +12,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from .models import Course, CourseLesson
 from .selectors import CourseSelector, LessonSelector
-from .serializers import CourseSerializer, CourseLessonSerializer
-
+from .serializers import CourseSerializer, CourseLessonSerializer, CourseRetrieveSerializer
 
 logger = structlog.get_logger(__name__)
 course_selector = CourseSelector()
@@ -71,7 +70,7 @@ class CourseViewSet(ModelViewSet):
             Retrieve a course.
         """
         course = self.get_object()
-        serializer = self.get_serializer(course)
+        serializer = CourseRetrieveSerializer(course)
         return Res(
             status.HTTP_200_OK, True, 
             data=serializer.data,

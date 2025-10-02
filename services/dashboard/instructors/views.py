@@ -108,7 +108,6 @@ class InstructorViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['POST'], url_path='profile')
     @permission_classes([IsAuthenticated])
-    # @parser_classes([MultiPartParser])
     @handle_exceptions
     def set_profile(self, request, *args, **kwargs):
         """
@@ -118,9 +117,19 @@ class InstructorViewSet(viewsets.ModelViewSet):
         serializer = InstructorProfileSerializer(instructor, data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        def all_profile_data_exists(profile_data):
+            for value in profile_data.values():
+                if not value:
+                    return False
+            return True
+
+        profile_completion = 'complete'
+        if not instructor.phone_number or not all_profile_data_exists(serializer.validated_data):
+            profile_completion = 'partial'
+
         with transaction.atomic():
             profile, created = instructor_selector.create_update_profile(instructor, serializer.validated_data)
-            instructor.profile_completion_status = 'partial'
+            instructor.profile_completion_status = profile_completion
             instructor.save()
 
         logger.info(

@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from .constants import ENV, Keywords
 from .decorators import handle_exceptions
 from .helpers import get_presigned_object_key
 from .utilities import Res, S3Utils
@@ -17,14 +18,13 @@ class GetUploadPresignedURL(APIView):
 
     @handle_exceptions
     def post(self, request):
-        # TODO: Handle content_type effectively as 
-        # this may result in unknown errors while uploading images
         content_type = request.data.get('content_type')
         prefix = request.data.get('prefix')
         file_name = request.data.get('file_name')
         specific_uuid = request.data.get('specific_uuid')
+        upload_type = request.data.get('upload_type', Keywords.PRIVATE)
 
-        if not content_type or not prefix or not file_name:
+        if not prefix or not file_name:
             return Res(
                 status.HTTP_400_BAD_REQUEST, False, 
                 msg="Missing required fields."
@@ -42,8 +42,13 @@ class GetUploadPresignedURL(APIView):
             instructor_uuid=request.user.uuid,
             specific_uuid=specific_uuid
         )
+
+        bucket_name = ENV.S3_BUCKET
+        if upload_type == Keywords.PUBLIC:
+            bucket_name = ENV.S3_STATIC_BUCKET
         
         url = S3Utils.get_signed_url(
+            bucket_name=bucket_name,
             object_key=object_key,
             content_type=content_type,
             is_upload=True

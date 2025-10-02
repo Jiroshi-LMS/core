@@ -1,5 +1,7 @@
+from core.constants import DefaultObjectKeys, ENV, Units
+from core.utilities import S3Utils
 from rest_framework import serializers
-from .models import Instructor
+from .models import Instructor, InstructorProfile
 
 class InstructorSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(required=True)
@@ -21,7 +23,10 @@ class InstructorSerializer(serializers.ModelSerializer):
         read_only_fields = ['uuid', 'created_at']
 
     def get_profile(self, obj):
-        return InstructorProfileSerializer(obj, read_only=True).data
+        profile = InstructorProfile.objects.filter(instructor=obj)
+        if profile.exists():
+            return InstructorProfileSerializer(profile.first(), read_only=True).data
+        return None
 
 
 class InstructorLoginSerializer(serializers.Serializer):
@@ -37,14 +42,25 @@ class InstructorLoginSerializer(serializers.Serializer):
 
 
 class InstructorProfileSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.CharField(required=False, default=None)
+    profile_picture = serializers.CharField(required=False, default=None, write_only=True)
     location = serializers.CharField(required=False, default=None)
     bio = serializers.CharField(required=False, default="")
+    profile_picture_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Instructor
         fields = [
-            'uuid', 'created_at',
+            'uuid', 'created_at', 'profile_picture_url',
             'profile_picture', 'location', 'bio'
         ]
         read_only_fields = ['uuid', 'created_at']
+
+    def get_profile_picture_url(self, obj):
+        profile_picture = obj.profile_picture
+        if not profile_picture:
+            profile_picture = DefaultObjectKeys.PROFILE_PICTURE
+        return S3Utils.get_signed_url(
+            bucket_name=ENV.S3_STATIC_BUCKET,
+            object_key=profile_picture,
+            expiration=Units.DAY,
+        )

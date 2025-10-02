@@ -17,4 +17,5 @@ class ENV():
     S3_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID')
     S3_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_REGION = os.getenv('AWS_REGION')
-    S3_BUCKET = os.getenv('AWS_BUCKET_NAME')
+    S3_BUCKET = os.getenv('AWS_MEDIA_BUCKET_NAME')
+    S3_STATIC_BUCKET = os.getenv('AWS_STATIC_BUCKET_NAME')
