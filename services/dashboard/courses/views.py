@@ -2,7 +2,7 @@ import structlog
 
 from core.decorators import handle_exceptions
 from core.utilities import Res, CustomPaginator, S3Utils
-from core.constants import ENV
+from core.constants import ENV, Units
 from django.core.serializers import serialize
 from django.db import transaction
 from django.db.models import Sum
@@ -12,13 +12,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from .models import Course, CourseLesson
-from .selectors import CourseSelector, LessonSelector
-from .serializers import CourseSerializer, CourseLessonSerializer, CourseRetrieveSerializer
+from .models import Course, CourseLesson, LessonResource
+from .selectors import CourseSelector, LessonSelector, LessonResourceSelector
+from .serializers import (
+    CourseSerializer, CourseLessonSerializer, CourseRetrieveSerializer,
+    LessonResourceSerializer, LessonTextResourceSerializer
+)
 
 logger = structlog.get_logger(__name__)
 course_selector = CourseSelector()
 lesson_selector = LessonSelector()
+resource_selector = LessonResourceSelector()
 
 
 class CourseViewSet(ModelViewSet):
@@ -248,4 +252,125 @@ class CourseLessonViewSet(ModelViewSet):
         return Res(
             status.HTTP_200_OK, True, 
             msg="Media key updated successfully."
+        ).json()
+    
+
+class LessonResourceViewSet(ModelViewSet):
+    queryset = LessonResource.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = LessonResourceSerializer
+    pagination_class = CustomPaginator
+
+    lookup_field = 'uuid'
+    lookup_value_regex = "[0-9a-f-]+"
+    
+    @handle_exceptions
+    def create(self, request, *args, **kwargs):
+        """
+            Create a lesson file resource.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        lesson = lesson_selector.by_uuid(serializer.validated_data['lesson_uuid'])
+        resource = resource_selector.create(
+            serializer.validated_data, lesson
+        )
+
+        return Res(
+            status.HTTP_201_CREATED, True, 
+            data={
+                'resource_id': resource.uuid,
+                'lesson_id': lesson.uuid
+            },
+            msg="Resource created successfully.",
+        ).json()
+    
+    @action(detail=False, methods=['PATCH'], url_path='update-text-resources')
+    @handle_exceptions
+    def update_text_resources(self, request, *args, **kwargs):
+        """
+            Create a lesson text resource.
+        """
+        serializer = LessonTextResourceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        lesson = lesson_selector.by_uuid(validated_data['lesson_uuid'])
+        if validated_data.get('notes'):
+            lesson.notes = validated_data.get('notes')
+        if validated_data.get('related_links'):
+            lesson.related_links = validated_data.get('related_links')
+        lesson.save()
+
+        return Res(
+            status.HTTP_201_CREATED, True, 
+            msg="Text Resource updated successfully."
+        ).json()
+    
+    @handle_exceptions
+    def list(self, request, *args, **kwargs):
+        """
+            List all lesson resources (files and text). 
+        """
+        lesson_uuid = request.query_params.get('lesson_id')
+        if not lesson_uuid:
+            return Res(
+                status.HTTP_400_BAD_REQUEST, False, 
+                msg="Lesson ID is required."
+            ).json()
+        lesson = lesson_selector.by_uuid(lesson_uuid)
+        file_resources = resource_selector.by_lesson(lesson)
+
+        return Res(
+            status.HTTP_200_OK, True,
+            data={
+                'lesson_id': lesson.uuid,
+                'notes': lesson.notes,
+                'related_links': lesson.related_links,
+                'file_resources': [
+                    {
+                        'uuid': file_resource.uuid,
+                        'title': file_resource.title,
+                        'file_name': file_resource.file_name,
+                        'file_size': file_resource.file_size,
+                        'file_type': file_resource.file_type,
+                        'file_key': S3Utils.get_signed_url(file_resource.file_key, expiration=Units.DAY),
+                    }
+                    for file_resource in file_resources
+                ],
+            },
+        ).json()
+    
+    @handle_exceptions
+    def partial_update(self, request, *args, **kwargs):
+        """
+            Update a lesson file title.
+        """
+        resource = self.get_object()
+        title = request.data.get('title')
+        if not title:
+            return Res(
+                status.HTTP_400_BAD_REQUEST, False, 
+                msg="Title is required."
+            ).json()
+        resource.title = title
+        resource.save()
+        return Res(
+            status.HTTP_200_OK, True, 
+            msg="Resource updated successfully."
+        ).json()
+
+    @handle_exceptions
+    def destroy(self, request, *args, **kwargs):
+        """
+            Delete a lesson file resource.
+        """
+        resource = self.get_object()
+        file_key = resource.file_key
+        if file_key:
+            S3Utils.delete_via_object_key(object_keys=[file_key])
+        resource.hard_delete()
+        return Res(
+            status.HTTP_200_OK, True, 
+            msg="Resource deleted successfully."
         ).json()

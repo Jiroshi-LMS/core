@@ -1,4 +1,4 @@
-from .models import Course, CourseLesson
+from .models import Course, CourseLesson, LessonResource
 
 
 class CourseSelector:
@@ -20,7 +20,11 @@ class CourseSelector:
         course.save()
         return course
 
+
 class LessonSelector:
+
+    def by_uuid(self, uuid):
+        return CourseLesson.objects.get(uuid=uuid)
     
     def create(self, validated_data, created_by, course):
         return CourseLesson.objects.create(
@@ -39,3 +43,19 @@ class LessonSelector:
             course=course, 
             access_status='active'
         )
+    
+
+class LessonResourceSelector():
+
+    def create(self, validated_data, lesson):
+        return LessonResource.objects.create(
+            lesson=lesson,
+            title = validated_data['title'],
+            file_name = validated_data['file_name'],
+            file_size = validated_data['file_size'],
+            file_type = validated_data['file_type'],
+            file_key = validated_data['file_key'],
+        )
+    
+    def by_lesson(self, lesson):
+        return LessonResource.objects.filter(lesson=lesson)

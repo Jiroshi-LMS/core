@@ -1,15 +1,9 @@
 # Config
 
 - Setup Docker Compose
-- Setup Static S3 Bucket
-- Add API Swagger
 
 # Dashboard Services
 
-- Lesson Reference materials Creation
-- Lesson Reference materials Retrieval/Download
-- Lesson Reference materials Deletion
-- Lesson Reference materials Updation
 - Lesson Retrieval
 - Lesson Updation
     - Update Lesson Media

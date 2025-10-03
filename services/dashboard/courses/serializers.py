@@ -3,7 +3,7 @@ from core.utilities import S3Utils
 from instructors.models import Instructor
 from rest_framework import serializers
 
-from .models import Course, CourseLesson
+from .models import Course, CourseLesson, LessonResource
 
 
 
@@ -80,3 +80,50 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
     def get_enrollments(self, obj):
         # TODO: Implement Enrollments
         return 0
+    
+
+class LessonResourceSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    file_name = serializers.CharField(required=True)
+    file_size = serializers.IntegerField(required=True)
+    file_type = serializers.CharField(required=True)
+    file_key = serializers.CharField(required=True)
+    notes = serializers.CharField(required=False)
+    related_links = serializers.JSONField(required=False)
+    lesson_uuid = serializers.UUIDField(required=True, write_only=True)
+
+    class Meta:
+        model = LessonResource
+        fields = [
+            'uuid', 'created_at', 'title', 'file_name', 
+            'file_size', 'file_type', 'file_key', 'notes',
+            'related_links', 'lesson_uuid',
+        ]
+        read_only_fields = ['uuid', 'created_at']
+
+
+class LessonTextResourceSerializer(serializers.ModelSerializer):
+    notes = serializers.CharField(required=False)
+    related_links = serializers.JSONField(required=False)
+    lesson_uuid = serializers.UUIDField(required=True, write_only=True)
+
+    class Meta:
+        model = LessonResource
+        fields = [
+            'uuid', 'created_at', 'notes',
+            'related_links', 'lesson_uuid',
+        ]
+        read_only_fields = ['uuid', 'created_at']
+
+    def validate_related_links(self, value):
+        if value:
+            if not isinstance(value, list):
+                raise serializers.ValidationError("Related links must be a array of objects.")
+            for item in value:
+                if not isinstance(item, dict):
+                    raise serializers.ValidationError("Each item in the related links array must be an object.")
+                if not item.get('title') or not item.get('url'):
+                    raise serializers.ValidationError("Each item in the related links array must have a title and url.")
+            
+        return value
+        

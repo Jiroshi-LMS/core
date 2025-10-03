@@ -23,7 +23,7 @@ class Course(TimeStampedModel, SoftDeleteMixin):
         Instructor, on_delete=models.DO_NOTHING, related_name='courses'
     )
     
-    history = HistoricalRecords()
+    # history = HistoricalRecords()
     
     class Meta:
         db_table = 'courses'
@@ -49,10 +49,27 @@ class CourseLesson(TimeStampedModel, SoftDeleteMixin):
     created_by = models.ForeignKey(
         Instructor, on_delete=models.DO_NOTHING, related_name='lessons'
     )
+    notes = models.TextField(null=True, blank=True)
+    related_links = models.JSONField(null=True, blank=True)
     
-    history = HistoricalRecords()
+    # history = HistoricalRecords()
 
     class Meta:
         db_table = 'course_lessons'
         verbose_name_plural = 'Course Lessons'
+        ordering = ['-created_at']
+
+
+class LessonResource(TimeStampedModel, SoftDeleteMixin):
+
+    lesson = models.ForeignKey(CourseLesson, on_delete=models.CASCADE, related_name='resources')
+    title = models.CharField(max_length=255)
+    file_name = models.CharField(max_length=255)
+    file_size = models.IntegerField()
+    file_type = models.CharField(max_length=20)
+    file_key = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = 'course_lesson_resources'
+        verbose_name_plural = 'Course Lesson Resources'
         ordering = ['-created_at']
