@@ -41,6 +41,20 @@ class InstructorLoginSerializer(serializers.Serializer):
         read_only_fields = ['username']
 
 
+class InstructorInfoUpdateSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(required=False)
+    username = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    phone_number = serializers.CharField(required=False)
+
+    class Meta:
+        model = Instructor
+        fields = [
+            'uuid', 'created_at', 'full_name', 'username', 'email', 'phone_number'
+        ]
+        read_only_fields = ['uuid', 'created_at']
+
+
 class InstructorProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.CharField(required=False, default=None, write_only=True)
     location = serializers.CharField(required=False, default=None)

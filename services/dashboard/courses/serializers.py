@@ -7,23 +7,6 @@ from .models import Course, CourseLesson, LessonResource
 
 
 
-class CourseLessonSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(required=True)
-    description = serializers.CharField(required=False, default="")
-    duration = serializers.IntegerField(required=False, default=0)
-    access_status = serializers.CharField(read_only=True)
-    media_key = serializers.CharField(required=False, default=None, write_only=True)
-    course_uuid = serializers.UUIDField(write_only=True)
-
-    class Meta:
-        model = CourseLesson
-        fields = [
-            'uuid', 'created_at', 'title', 'access_status',
-            'description', 'duration', 'media_key', 'course_uuid'
-        ]
-        read_only_fields = ['uuid', 'created_at']
-
-
 class CourseSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
@@ -81,6 +64,58 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
         # TODO: Implement Enrollments
         return 0
     
+
+class CourseLessonSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    description = serializers.CharField(required=False, default="")
+    duration = serializers.IntegerField(required=False, default=0)
+    access_status = serializers.CharField(read_only=True)
+    media_key = serializers.CharField(required=False, default=None, write_only=True)
+    course_uuid = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = CourseLesson
+        fields = [
+            'uuid', 'created_at', 'title', 'access_status',
+            'description', 'duration', 'media_key', 'course_uuid'
+        ]
+        read_only_fields = ['uuid', 'created_at']
+
+
+class CourseLessonRetrieveSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    description = serializers.CharField(required=False, default="")
+    duration = serializers.IntegerField(required=False, default=None)
+    access_status = serializers.CharField(read_only=True)
+    video_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CourseLesson
+        fields = [
+            'uuid', 'created_at', 'title', 'access_status',
+            'description', 'duration', 'video_url'
+        ]
+        read_only_fields = ['uuid', 'created_at']
+
+    def get_video_url(self, obj):
+        video_key = obj.media_key
+        if not video_key:
+            return None
+        return S3Utils.get_signed_url(video_key)
+    
+
+class CourseLessonUpdateSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+    description = serializers.CharField(required=False, allow_blank=True)
+    access_status = serializers.CharField(required=False)
+
+    class Meta:
+        model = CourseLesson
+        fields = [
+            'uuid', 'created_at', 'title', 'description', 'access_status',
+        ]
+        read_only_fields = ['uuid', 'created_at']
+
 
 class LessonResourceSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)

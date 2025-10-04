@@ -3,8 +3,9 @@ import traceback
 
 from core.constants import ENV, CommonErrors
 from core.decorators import handle_exceptions
-from core.utilities import Res
+from core.utilities import Res, S3Utils
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
@@ -18,6 +19,7 @@ from .models import Instructor
 from .serializers import (
     InstructorSerializer, 
     InstructorLoginSerializer,
+    InstructorInfoUpdateSerializer,
     InstructorProfileSerializer
 )
 from .selectors import InstructorSelector
@@ -114,7 +116,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
             Set Instructor Profile
         """
         instructor = instructor_selector.get_by_id(request.user.id)
-        serializer = InstructorProfileSerializer(instructor, data=request.data)
+        serializer = InstructorProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         def all_profile_data_exists(profile_data):
@@ -127,16 +129,18 @@ class InstructorViewSet(viewsets.ModelViewSet):
         if not instructor.phone_number or not all_profile_data_exists(serializer.validated_data):
             profile_completion = 'partial'
 
+        try:
+            profile = instructor_selector.get_profile(instructor)
+        except ObjectDoesNotExist:
+            profile = None
+
+        if profile and profile.profile_picture:
+            S3Utils.delete_via_object_key(object_keys=[profile.profile_picture], bucket_name=ENV.S3_STATIC_BUCKET)
+
         with transaction.atomic():
             profile, created = instructor_selector.create_update_profile(instructor, serializer.validated_data)
             instructor.profile_completion_status = profile_completion
             instructor.save()
-
-        logger.info(
-            "instructor_profile_updated",
-            instructor_id=str(instructor.id),
-            **serializer.validated_data,
-        )
         
         return Res(
             status.HTTP_200_OK, True, 
@@ -196,6 +200,52 @@ class InstructorViewSet(viewsets.ModelViewSet):
             ).json()
             response.delete_cookie('instructor_refresh_token')
             return response
+    
+    @action(detail=False, methods=['PUT'], url_path='update-info')
+    @permission_classes([IsAuthenticated])
+    @handle_exceptions
+    def update_info(self, request, *args, **kwargs):
+        serializer = InstructorInfoUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instructor = instructor_selector.get_by_id(request.user.id)
+        instructor_selector.update_info(instructor, serializer.validated_data)
+
+        return Res(
+            status.HTTP_200_OK, True, 
+            data=serializer.validated_data,
+            msg="Instructor updated successfully."
+        ).json()
+    
+    @action(detail=False, methods=['PATCH'], url_path='update-password')
+    @permission_classes([IsAuthenticated])
+    @handle_exceptions
+    def update_password(self, request, *args, **kwargs):
+        instructor = instructor_selector.get_by_id(request.user.id)
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        if not current_password or not new_password:
+            return Res(
+                status.HTTP_400_BAD_REQUEST, False, 
+                msg="Missing required fields."
+            ).json()
+
+        if not instructor.check_password(current_password):
+            return Res(
+                status.HTTP_400_BAD_REQUEST, False, 
+                msg="Provided current password is incorrect."
+            ).json()
+        instructor.set_password(new_password)
+        return Res(
+            status.HTTP_200_OK, True, 
+            msg="Instructor's password updated successfully."
+        ).json()
+    
+    @action(detail=False, methods=['POST'], url_path='generate-api-key')
+    @permission_classes([IsAuthenticated])
+    @handle_exceptions
+    def generate_api_key(self, request, *args, **kwargs):
+        pass
     
 
 class CustomTokenRefreshView(TokenRefreshView):

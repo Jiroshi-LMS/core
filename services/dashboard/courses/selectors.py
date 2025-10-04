@@ -2,6 +2,10 @@ from .models import Course, CourseLesson, LessonResource
 
 
 class CourseSelector:
+
+    def by_id(self, id):
+        return Course.objects.get(id=id)
+
     def by_uuid(self, uuid):
         return Course.objects.get(uuid=uuid)
     
@@ -43,6 +47,13 @@ class LessonSelector:
             course=course, 
             access_status='active'
         )
+    
+    def update(self, validated_data, lesson):
+        for key, value in validated_data.items():
+            if value is not None:
+                setattr(lesson, key, value)
+        lesson.save()
+        return lesson
     
 
 class LessonResourceSelector():

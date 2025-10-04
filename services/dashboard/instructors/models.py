@@ -173,3 +173,28 @@ class LoginAttempt(TimeStampedModel):
 
     def __str__(self):
         return f"{self.username} - {self.attempt_type} from {self.ip_address}"
+    
+
+class InstructorKeys(TimeStampedModel, SoftDeleteMixin):
+    """
+        To hold instructor's API Keys.
+    """
+
+    class Scope(models.TextChoices):
+        READ = "read", _("Read")
+        WRITE = "write", _("Write")
+        READ_WRITE = "read_write", _("Read & Write")
+
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='api_keys')
+    key = models.CharField(max_length=255, unique=True)
+    scope = models.CharField(max_length=255, choices=Scope.choices, default=Scope.READ)
+    is_active = models.BooleanField(default=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('Instructor Key')
+        verbose_name_plural = _('Instructor Keys')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['instructor', 'is_active']),
+        ]

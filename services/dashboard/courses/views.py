@@ -15,8 +15,8 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Course, CourseLesson, LessonResource
 from .selectors import CourseSelector, LessonSelector, LessonResourceSelector
 from .serializers import (
-    CourseSerializer, CourseLessonSerializer, CourseRetrieveSerializer,
-    LessonResourceSerializer, LessonTextResourceSerializer
+    CourseSerializer, CourseLessonSerializer, CourseRetrieveSerializer, CourseLessonUpdateSerializer,
+    CourseLessonRetrieveSerializer, LessonResourceSerializer, LessonTextResourceSerializer
 )
 
 logger = structlog.get_logger(__name__)
@@ -214,7 +214,7 @@ class CourseLessonViewSet(ModelViewSet):
             Retrieve a lesson.
         """
         lesson = self.get_object()
-        serializer = self.get_serializer(lesson)
+        serializer = CourseLessonRetrieveSerializer(lesson)
         return Res(
             status.HTTP_200_OK, True, 
             data=serializer.data,
@@ -235,10 +235,13 @@ class CourseLessonViewSet(ModelViewSet):
                 status.HTTP_400_BAD_REQUEST, False, 
                 msg="Missing required fields: media_key, media_duration."
             ).json()
-        
+        existing_media_key = lesson.media_key
+        if existing_media_key and existing_media_key != lesson_media:
+            S3Utils.delete_via_object_key(object_keys=[existing_media_key])
         lesson.media_key = lesson_media
         lesson.duration = media_duration
-        lesson.access_status = 'active'
+        if lesson.access_status == 'draft':
+            lesson.access_status = 'active'
         lesson.save()
 
         course = course_selector.by_uuid(lesson.course.uuid)
@@ -247,11 +250,42 @@ class CourseLessonViewSet(ModelViewSet):
         )['duration']
         if course_lessons_duration is not None:
             course.duration = course_lessons_duration
+            if course.access_status == 'draft':
+                course.access_status = 'inactive'
             course.save()
 
         return Res(
             status.HTTP_200_OK, True, 
             msg="Media key updated successfully."
+        ).json()
+    
+    @handle_exceptions
+    def update(self, request, *args, **kwargs):
+        serializer = CourseLessonUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        lesson = self.get_object()
+        validated_data = serializer.validated_data
+
+        lesson = lesson_selector.update(validated_data, lesson)
+        return Res(
+            status.HTTP_200_OK, True, 
+            data=validated_data,
+            msg="Lesson updated successfully."
+        ).json()
+    
+    @handle_exceptions
+    def destroy(self, request, *args, **kwargs):
+        lesson = self.get_object()
+        course = course_selector.by_id(lesson.course_id)
+        course.duration = course.duration - lesson.duration
+        if course.duration <= 0:
+            course.duration = 0
+            course.access_status = 'draft'
+            course.save()
+        lesson.delete()
+        return Res(
+            status.HTTP_200_OK, True, 
+            msg="Lesson deleted successfully."
         ).json()
     
 

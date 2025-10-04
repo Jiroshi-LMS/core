@@ -44,3 +44,18 @@ class InstructorSelector:
                 'bio': valid_profile_data.get('bio'),
             }
         )
+    
+    def get_profile(self, instructor: Instructor):
+        """
+        Get an instructor profile.
+        """
+        return InstructorProfile.objects.get(instructor=instructor)
+    
+    def update_info(self, instructor: Instructor, valid_info_data: dict):
+        """
+        Update an instructor's info.
+        """
+        for key, value in valid_info_data.items():
+            if value is not None:
+                setattr(instructor, key, value)
+        instructor.save()
