@@ -13,10 +13,12 @@ class InstructorSelector:
         """
         return Instructor.objects.get(id=instructor_id)
 
-    def get_by_username_or_email(self, username_or_email: str):
+    def get_by_username_or_email(self, username_or_email: str, instructor: Instructor | None = None):
         """
         Get an instructor by username or email.
         """
+        if instructor:
+            return Instructor.objects.get(Q(username=username_or_email) | Q(email=username_or_email), id=instructor.id)
         return Instructor.objects.get(Q(username=username_or_email) | Q(email=username_or_email))
 
     def create_instructor(self, valid_instructor_data: dict):

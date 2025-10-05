@@ -30,6 +30,10 @@ class Course(TimeStampedModel, SoftDeleteMixin):
         verbose_name_plural = 'Courses'
         ordering = ['-created_at']
         unique_together = ('title', 'created_by')
+
+    @property
+    def owner_field(self):
+        return "created_by"
         
 
 class CourseLesson(TimeStampedModel, SoftDeleteMixin):
@@ -59,6 +63,10 @@ class CourseLesson(TimeStampedModel, SoftDeleteMixin):
         verbose_name_plural = 'Course Lessons'
         ordering = ['-created_at']
 
+    @property
+    def owner_field(self):
+        return "created_by"
+
 
 class LessonResource(TimeStampedModel, SoftDeleteMixin):
 
@@ -68,8 +76,15 @@ class LessonResource(TimeStampedModel, SoftDeleteMixin):
     file_size = models.IntegerField()
     file_type = models.CharField(max_length=20)
     file_key = models.CharField(max_length=255, null=True, blank=True)
+    created_by = models.ForeignKey(
+        Instructor, on_delete=models.DO_NOTHING, related_name='lesson_resources', null=True, blank=True
+    )
 
     class Meta:
         db_table = 'course_lesson_resources'
         verbose_name_plural = 'Course Lesson Resources'
         ordering = ['-created_at']
+
+    @property
+    def owner_field(self):
+        return "created_by"

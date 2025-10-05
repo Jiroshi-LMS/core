@@ -1,12 +1,17 @@
 from .models import Course, CourseLesson, LessonResource
+from instructors.models import Instructor
 
 
 class CourseSelector:
 
-    def by_id(self, id):
+    def by_id(self, id, instructor: Instructor, instructor_check=True):
+        if instructor_check:
+            return Course.objects.get(id=id, created_by=instructor)
         return Course.objects.get(id=id)
 
-    def by_uuid(self, uuid):
+    def by_uuid(self, uuid, instructor: Instructor, instructor_check=True):
+        if instructor_check:
+            return Course.objects.get(uuid=uuid, created_by=instructor)
         return Course.objects.get(uuid=uuid)
     
     def create(self, validated_data, created_by):
@@ -27,7 +32,9 @@ class CourseSelector:
 
 class LessonSelector:
 
-    def by_uuid(self, uuid):
+    def by_uuid(self, uuid, instructor: Instructor, instructor_check=True):
+        if instructor_check:
+            return CourseLesson.objects.get(uuid=uuid, created_by=instructor)
         return CourseLesson.objects.get(uuid=uuid)
     
     def create(self, validated_data, created_by, course):
@@ -39,10 +46,18 @@ class LessonSelector:
             course=course
         )
 
-    def all_lessons(self, course):
+    def all_lessons(self, course, instructor: Instructor, instructor_check=True):
+        if instructor_check:
+            return CourseLesson.all_objects.filter(course=course, created_by=instructor)
         return CourseLesson.all_objects.filter(course=course)
     
-    def active_lessons(self, course):
+    def active_lessons(self, course, instructor: Instructor, instructor_check=True):
+        if instructor_check:
+            return CourseLesson.objects.filter(
+                course=course, 
+                access_status='active',
+                created_by=instructor
+            )
         return CourseLesson.objects.filter(
             course=course, 
             access_status='active'
@@ -58,7 +73,7 @@ class LessonSelector:
 
 class LessonResourceSelector():
 
-    def create(self, validated_data, lesson):
+    def create(self, validated_data, lesson, instructor):
         return LessonResource.objects.create(
             lesson=lesson,
             title = validated_data['title'],
@@ -66,7 +81,10 @@ class LessonResourceSelector():
             file_size = validated_data['file_size'],
             file_type = validated_data['file_type'],
             file_key = validated_data['file_key'],
+            created_by = instructor
         )
     
-    def by_lesson(self, lesson):
+    def by_lesson(self, lesson, instructor: Instructor, instructor_check=True):
+        if instructor_check:
+            return LessonResource.objects.filter(lesson=lesson, created_by=instructor)
         return LessonResource.objects.filter(lesson=lesson)

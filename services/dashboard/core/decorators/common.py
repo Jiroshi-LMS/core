@@ -8,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import Http404
 from rest_framework import status, serializers
+from rest_framework.exceptions import PermissionDenied
 import structlog
 import traceback
 import functools
@@ -23,6 +24,10 @@ def handle_exceptions(view_func):
             err_stack = traceback.format_exc()
             logger.error("value_error", error=str(e), extra={'path': request.path, 'stack': err_stack})
             return Res(status.HTTP_400_BAD_REQUEST, False, msg=str(e)).json()
+        except PermissionDenied as e:
+            err_stack = traceback.format_exc()
+            logger.error("permission_denied", error=str(e), extra={'path': request.path, 'stack': err_stack})
+            return Res(status.HTTP_403_FORBIDDEN, False, msg=str(e)).json()
         except serializers.ValidationError as e:
             flat_msg = flatten_serializer_errors(e.detail)
             logger.error(

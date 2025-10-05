@@ -6,6 +6,7 @@ from core.constants import ENV, Units
 from django.core.serializers import serialize
 from django.db import transaction
 from django.db.models import Sum
+from instructors.permissions import IsOwner
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -29,7 +30,7 @@ class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     pagination_class = CustomPaginator
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     lookup_field = 'uuid'
     lookup_value_regex = "[0-9a-f-]+"
@@ -56,7 +57,8 @@ class CourseViewSet(ModelViewSet):
         """
             List all courses.
         """
-        queryset = self.filter_queryset(self.get_queryset()).order_by('-created_at', '-id')
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(created_by=request.user).order_by('-created_at', '-id')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -93,7 +95,7 @@ class CourseViewSet(ModelViewSet):
         if course.access_status == 'active':
             course.access_status = 'inactive'
         else:
-            lesson_count = lesson_selector.active_lessons(course).count()
+            lesson_count = lesson_selector.active_lessons(course, request.user).count()
             if lesson_count < 1:
                 return Res(
                     status.HTTP_400_BAD_REQUEST, False, 
@@ -122,7 +124,7 @@ class CourseViewSet(ModelViewSet):
                     bucket_name=ENV.S3_STATIC_BUCKET
                 )
             if 'access_status' in validated_data and course.access_status != validated_data.get('access_status'):
-                lesson_count = lesson_selector.active_lessons(course).count()
+                lesson_count = lesson_selector.active_lessons(course, request.user).count()
                 if lesson_count < 1:
                     return Res(
                         status.HTTP_400_BAD_REQUEST, False,
@@ -139,7 +141,7 @@ class CourseViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # TODO: Test again after implementing lessons
         course = self.get_object()
-        lessons = lesson_selector.all_lessons(course)
+        lessons = lesson_selector.all_lessons(course, request.user)
 
         course.delete()
         for lesson in lessons:
@@ -153,7 +155,7 @@ class CourseViewSet(ModelViewSet):
 
 class CourseLessonViewSet(ModelViewSet):
     queryset = CourseLesson.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = CourseLessonSerializer
     pagination_class = CustomPaginator
 
@@ -167,7 +169,7 @@ class CourseLessonViewSet(ModelViewSet):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        course = course_selector.by_uuid(serializer.validated_data['course_uuid'])
+        course = course_selector.by_uuid(serializer.validated_data['course_uuid'], request.user)
         lesson = lesson_selector.create(
             serializer.validated_data, request.user, course
         )
@@ -192,7 +194,7 @@ class CourseLessonViewSet(ModelViewSet):
                 status.HTTP_400_BAD_REQUEST, False, 
                 msg="Course ID is required."
             ).json()
-        course = course_selector.by_uuid(course_uuid)
+        course = course_selector.by_uuid(course_uuid, request.user)
         queryset = self.filter_queryset(self.get_queryset()).order_by('-created_at', '-id')
         queryset = queryset.filter(course=course)
 
@@ -244,8 +246,8 @@ class CourseLessonViewSet(ModelViewSet):
             lesson.access_status = 'active'
         lesson.save()
 
-        course = course_selector.by_uuid(lesson.course.uuid)
-        course_lessons_duration = lesson_selector.active_lessons(course).aggregate(
+        course = course_selector.by_uuid(lesson.course.uuid, request.user)
+        course_lessons_duration = lesson_selector.active_lessons(course, request.user).aggregate(
             duration=Sum('duration')
         )['duration']
         if course_lessons_duration is not None:
@@ -276,7 +278,7 @@ class CourseLessonViewSet(ModelViewSet):
     @handle_exceptions
     def destroy(self, request, *args, **kwargs):
         lesson = self.get_object()
-        course = course_selector.by_id(lesson.course_id)
+        course = course_selector.by_id(lesson.course_id, request.user)
         course.duration = course.duration - lesson.duration
         if course.duration <= 0:
             course.duration = 0
@@ -291,7 +293,7 @@ class CourseLessonViewSet(ModelViewSet):
 
 class LessonResourceViewSet(ModelViewSet):
     queryset = LessonResource.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = LessonResourceSerializer
     pagination_class = CustomPaginator
 
@@ -305,9 +307,9 @@ class LessonResourceViewSet(ModelViewSet):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        lesson = lesson_selector.by_uuid(serializer.validated_data['lesson_uuid'])
+        lesson = lesson_selector.by_uuid(serializer.validated_data['lesson_uuid'], request.user)
         resource = resource_selector.create(
-            serializer.validated_data, lesson
+            serializer.validated_data, lesson, request.user
         )
 
         return Res(
@@ -329,7 +331,7 @@ class LessonResourceViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        lesson = lesson_selector.by_uuid(validated_data['lesson_uuid'])
+        lesson = lesson_selector.by_uuid(validated_data['lesson_uuid'], request.user)
         if validated_data.get('notes'):
             lesson.notes = validated_data.get('notes')
         if validated_data.get('related_links'):
@@ -352,7 +354,7 @@ class LessonResourceViewSet(ModelViewSet):
                 status.HTTP_400_BAD_REQUEST, False, 
                 msg="Lesson ID is required."
             ).json()
-        lesson = lesson_selector.by_uuid(lesson_uuid)
+        lesson = lesson_selector.by_uuid(lesson_uuid, request.user)
         file_resources = resource_selector.by_lesson(lesson)
 
         return Res(
