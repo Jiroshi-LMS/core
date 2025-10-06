@@ -34,7 +34,7 @@ class CourseSerializer(serializers.ModelSerializer):
         return Urls.STATIC_S3_URL + thumbnail
 
     def get_enrollments(self, obj):
-        # TODO: Implement Enrollments Count
+        # TODO: Implement Enrollments Count once students are implemented
         return 0
 
 
