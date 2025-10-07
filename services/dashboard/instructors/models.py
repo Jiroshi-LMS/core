@@ -19,6 +19,7 @@ class Instructor(AbstractUser, TimeStampedModel, SoftDeleteMixin):
     ]
 
     full_name = models.CharField(max_length=255)
+    email = models.CharField(max_length=100, unique=True)
     country_code = models.CharField(max_length=5, null=True, blank=True)
     phone_number = models.CharField(unique=True, max_length=15, null=True, blank=True)
     profile_completion_status = models.CharField(max_length=20, choices=PROFILE_STATUS_CHOICES, default='pending')

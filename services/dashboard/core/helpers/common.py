@@ -1,4 +1,5 @@
 import mimetypes
+import re
 from core.constants import PresignedPrefix
 
 def flatten_serializer_errors(detail):
@@ -13,6 +14,32 @@ def flatten_serializer_errors(detail):
         else:
             messages.append(f"{field}{errors}")
     return " | ".join(messages)
+
+
+def extract_integrity_error_context(msg):
+    user_msg = "Data Integrity Error"
+
+    # Detect UNIQUE constraint violations
+    if "UNIQUE constraint failed" in msg:
+        try:
+            field = msg.split(":")[-1].strip()
+            user_msg = f"{field} already exists."
+        except Exception:
+            user_msg = "Record already exists."
+    # Handle duplicate key from Postgres (different message pattern)
+    elif "duplicate key" in msg.lower():
+        match = re.search(r"Key \(([^)]+)\)=", msg)
+        if match:
+            field = match.group(1)
+            field = field.replace('_', ' ').capitalize()
+            user_msg = f"{field} already exists."
+        else:
+            user_msg = "Record already exists."
+    # Handle foreign key constraint failure
+    elif "FOREIGN KEY constraint failed" in msg or "violates foreign key constraint" in msg:
+        user_msg = "Invalid reference — related record not found."
+
+    return user_msg
 
 
 def get_presigned_object_key(

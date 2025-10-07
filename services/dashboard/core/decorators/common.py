@@ -2,7 +2,7 @@
 Enhanced middleware for comprehensive logging and user activity tracking.
 """
 from core.constants import CommonErrors
-from core.helpers import flatten_serializer_errors
+from core.helpers import flatten_serializer_errors, extract_integrity_error_context
 from core.utilities import Res
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
@@ -41,8 +41,10 @@ def handle_exceptions(view_func):
             return Res(status.HTTP_404_NOT_FOUND, False, msg="Not found").json()
         except IntegrityError as e:
             err_stack = traceback.format_exc()
-            logger.error("integrity_error", error=str(e), extra={'path': request.path, 'stack': err_stack})
-            return Res(status.HTTP_400_BAD_REQUEST, False, msg="Data Integrity Error").json()
+            msg=str(e)
+            user_msg=extract_integrity_error_context(msg)
+            logger.error("integrity_error", error=msg, extra={'path': request.path, 'stack': err_stack})
+            return Res(status.HTTP_400_BAD_REQUEST, False, msg=user_msg).json()
         except Exception as e:
             err_stack = traceback.format_exc()
             logger.exception("unexpected_server_error", error=str(e), extra={'path': request.path, 'stack': err_stack})
