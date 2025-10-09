@@ -1,16 +1,11 @@
 import structlog
 
 from core.decorators import handle_exceptions
-from core.utilities import Res, CustomPaginator, S3Utils
-from core.constants import ENV, Units
-from django.core.serializers import serialize
-from django.db import transaction
-from django.db.models import Sum
+from core.utilities import Res, CustomPaginator
 from instructors.permissions import IsOwner
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Course, CourseLesson, LessonResource
