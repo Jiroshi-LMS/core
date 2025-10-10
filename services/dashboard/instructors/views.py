@@ -68,8 +68,8 @@ class InstructorViewSet(viewsets.ModelViewSet):
         })
     
 
-    @action(detail=False, methods=['POST'], url_path='login')
     @handle_exceptions
+    @action(detail=False, methods=['POST'], url_path='login')
     def login_view(self, request, *args, **kwargs):
         """
             Instructor Login
@@ -108,9 +108,8 @@ class InstructorViewSet(viewsets.ModelViewSet):
             'expiry_seconds': ENV.REFRESH_TOKEN_EXP * 24 * 60 * 60
         })
     
-    @action(detail=False, methods=['POST'], url_path='profile')
-    @permission_classes([IsAuthenticated])
     @handle_exceptions
+    @action(detail=False, methods=['POST'], url_path='profile', permission_classes=[IsAuthenticated])
     def set_profile(self, request, *args, **kwargs):
         """
             Set Instructor Profile
@@ -153,9 +152,8 @@ class InstructorViewSet(viewsets.ModelViewSet):
         ).json()
     
 
-    @action(detail=False, methods=['GET'], url_path='me')
-    @permission_classes([IsAuthenticated])
     @handle_exceptions
+    @action(detail=False, methods=['GET'], url_path='me', permission_classes=[IsAuthenticated])
     def get_profile(self, request, *args, **kwargs):
         serializer = self.get_serializer(request.user)
         return Res(
@@ -165,9 +163,8 @@ class InstructorViewSet(viewsets.ModelViewSet):
         ).json()
 
     
-    @action(detail=False, methods=['POST'], url_path='logout')
-    @permission_classes([IsAuthenticated])
     @handle_exceptions
+    @action(detail=False, methods=['POST'], url_path='logout', permission_classes=[IsAuthenticated])
     def logout_view(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('instructor_refresh_token')
         if not refresh_token:
@@ -201,9 +198,8 @@ class InstructorViewSet(viewsets.ModelViewSet):
             response.delete_cookie('instructor_refresh_token')
             return response
     
-    @action(detail=False, methods=['PUT'], url_path='update-info')
-    @permission_classes([IsAuthenticated])
     @handle_exceptions
+    @action(detail=False, methods=['PUT'], url_path='update-info', permission_classes=[IsAuthenticated])
     def update_info(self, request, *args, **kwargs):
         serializer = InstructorInfoUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -216,9 +212,8 @@ class InstructorViewSet(viewsets.ModelViewSet):
             msg="Instructor updated successfully."
         ).json()
     
-    @action(detail=False, methods=['PATCH'], url_path='update-password')
-    @permission_classes([IsAuthenticated])
     @handle_exceptions
+    @action(detail=False, methods=['PATCH'], url_path='update-password', permission_classes=[IsAuthenticated])
     def update_password(self, request, *args, **kwargs):
         instructor = instructor_selector.get_by_id(request.user.id)
         current_password = request.data.get('current_password')
@@ -240,12 +235,6 @@ class InstructorViewSet(viewsets.ModelViewSet):
             status.HTTP_200_OK, True, 
             msg="Instructor's password updated successfully."
         ).json()
-    
-    @action(detail=False, methods=['POST'], url_path='generate-api-key')
-    @permission_classes([IsAuthenticated])
-    @handle_exceptions
-    def generate_api_key(self, request, *args, **kwargs):
-        pass
     
 
 class CustomTokenRefreshView(TokenRefreshView):
