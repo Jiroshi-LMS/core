@@ -30,15 +30,15 @@ class InstructorSerializer(serializers.ModelSerializer):
 
 
 class InstructorLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
     class Meta:
         model = Instructor
         fields = [
-            'username', 'password'
+            'email', 'password'
         ]
-        read_only_fields = ['username']
+        read_only_fields = ['email']
 
 
 class InstructorInfoUpdateSerializer(serializers.ModelSerializer):

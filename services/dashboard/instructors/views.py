@@ -76,7 +76,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
         """
         serializer = InstructorLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        instructor = instructor_selector.get_by_username_or_email(serializer.validated_data['username'])
+        instructor = instructor_selector.get_by_username_or_email(serializer.validated_data['email'])
         if not instructor.check_password(serializer.validated_data['password']):
             return Res(
                 status.HTTP_401_UNAUTHORIZED, False, 
