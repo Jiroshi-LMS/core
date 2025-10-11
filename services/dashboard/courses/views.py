@@ -134,7 +134,7 @@ class CourseLessonViewSet(ModelViewSet):
     lookup_value_regex = "[0-9a-f-]+"
 
     def get_queryset(self):
-        CourseLesson.objects.filter(created_by=self.request.user).order_by('-created_at', '-id')
+        return CourseLesson.objects.filter(created_by=self.request.user).order_by('-created_at', '-id')
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
@@ -162,7 +162,7 @@ class CourseLessonViewSet(ModelViewSet):
                 msg="Course ID is required."
             ).json()
         course = course_selector.by_uuid(course_uuid, request.user)
-        queryset = self.filter_queryset(self.get_queryset()).filter(course=course)
+        queryset = self.filter_queryset(self.get_queryset().filter(course=course))
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
         return self.paginator.get_paginated_response(data=serializer.data, msg="Lessons retrieved successfully.")
