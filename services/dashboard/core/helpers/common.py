@@ -43,9 +43,9 @@ def extract_integrity_error_context(msg):
 
 
 def get_presigned_object_key(
-        prefix, file_name, 
+        prefix, file_name, content_type=None,
         file_ext=None, instructor_uuid=None, 
-        specific_uuid=None, content_type=None
+        specific_uuid=None
     ):
     extension = None
     if file_ext:

@@ -21,8 +21,8 @@ class GetUploadPresignedURL(APIView):
         content_type = request.data.get('content_type')
         prefix = request.data.get('prefix')
         file_name = request.data.get('file_name')
-        specific_uuid = request.data.get('specific_uuid')
-        upload_type = request.data.get('upload_type', Keywords.PRIVATE)
+        specific_uuid = request.data.get('specific_id')
+        upload_type = request.data.get('upload_type', Keywords.PUBLIC)
 
         if not prefix or not file_name:
             return Res(
@@ -38,6 +38,7 @@ class GetUploadPresignedURL(APIView):
         object_key = get_presigned_object_key(
             prefix=prefix,
             file_name=file_name,
+            content_type=content_type,
             file_ext=file_ext,
             instructor_uuid=request.user.uuid,
             specific_uuid=specific_uuid

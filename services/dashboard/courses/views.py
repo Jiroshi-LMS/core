@@ -2,12 +2,15 @@ import structlog
 
 from core.decorators import handle_exceptions
 from core.utilities import Res, CustomPaginator
+from django_filters.rest_framework import DjangoFilterBackend
 from instructors.permissions import IsOwner
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
+from .filters import CourseFilters
 from .models import Course, CourseLesson, LessonResource
 from .selectors import CourseSelector, LessonSelector, LessonResourceSelector
 from .serializers import (
@@ -30,12 +33,17 @@ class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     pagination_class = CustomPaginator
     permission_classes = [IsAuthenticated, IsOwner]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CourseFilters
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'id']
+    ordering = ['-created_at']
 
     lookup_field = 'uuid'
     lookup_value_regex = "[0-9a-f-]+"
 
     def get_queryset(self):
-        Course.objects.filter(created_by=self.request.user).order_by('-created_at', '-id')
+        return Course.objects.filter(created_by=self.request.user).order_by('-created_at', '-id')
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):

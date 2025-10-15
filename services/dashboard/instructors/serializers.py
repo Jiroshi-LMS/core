@@ -56,9 +56,9 @@ class InstructorInfoUpdateSerializer(serializers.ModelSerializer):
 
 
 class InstructorProfileSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.CharField(required=False, default=None, write_only=True)
-    location = serializers.CharField(required=False, default=None)
-    bio = serializers.CharField(required=False, default="")
+    profile_picture = serializers.CharField(required=False, allow_null=True, write_only=True)
+    location = serializers.CharField(required=False, allow_null=True)
+    bio = serializers.CharField(required=False, allow_null=True)
     profile_picture_url = serializers.SerializerMethodField()
 
     class Meta:
