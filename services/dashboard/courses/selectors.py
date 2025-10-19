@@ -16,10 +16,10 @@ class CourseSelector:
     
     def create(self, validated_data, created_by):
         return Course.objects.create(
-            title=validated_data['title'],
-            description=validated_data['description'],
-            thumbnail=validated_data['thumbnail'],
-            duration=validated_data['duration'],
+            title=validated_data.get('title'),
+            description=validated_data.get('description'),
+            thumbnail=validated_data.get('thumbnail'),
+            duration=validated_data.get('duration'),
             created_by=created_by
         )
 

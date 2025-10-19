@@ -14,8 +14,10 @@ from .filters import CourseFilters
 from .models import Course, CourseLesson, LessonResource
 from .selectors import CourseSelector, LessonSelector, LessonResourceSelector
 from .serializers import (
-    CourseSerializer, CourseLessonSerializer, CourseRetrieveSerializer, CourseLessonUpdateSerializer,
-    CourseLessonRetrieveSerializer, LessonResourceSerializer, LessonTextResourceSerializer
+    CourseSerializer, CourseUpdateSerializer, 
+    CourseLessonSerializer, CourseRetrieveSerializer, 
+    CourseLessonUpdateSerializer, CourseLessonRetrieveSerializer, 
+    LessonResourceSerializer, LessonTextResourceSerializer
 )
 from .services import (
     CourseServices, CourseLessonServices,
@@ -36,7 +38,7 @@ class CourseViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseFilters
     search_fields = ['title', 'description']
-    ordering_fields = ['created_at', 'id']
+    ordering_fields = ['created_at']
     ordering = ['-created_at']
 
     lookup_field = 'uuid'
@@ -107,7 +109,7 @@ class CourseViewSet(ModelViewSet):
         """
             Update a Course Info
         """
-        serializer = self.get_serializer(data=request.data)
+        serializer = CourseUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         course = self.get_object()
         course = CourseServices.update_course_info(

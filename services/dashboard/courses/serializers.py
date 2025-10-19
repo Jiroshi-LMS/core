@@ -9,7 +9,7 @@ from .models import Course, CourseLesson, LessonResource
 
 class CourseSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
-    description = serializers.CharField(required=False, default="")
+    description = serializers.CharField(required=False, allow_null=True)
     thumbnail = serializers.CharField(required=True, write_only=True)
     duration = serializers.IntegerField(required=False, default=0)
     access_status = serializers.CharField(read_only=True)
@@ -64,6 +64,21 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
         # TODO: Implement Enrollments
         return 0
     
+
+class CourseUpdateSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    description = serializers.CharField(required=False, allow_null=True)
+    thumbnail = serializers.CharField(required=False)
+    access_status = serializers.BooleanField(required=True)
+
+    class Meta:
+        model = Course
+        fields = [
+            'uuid', 'created_at', 'access_status',
+            'title', 'description', 'thumbnail'
+        ]
+        read_only_fields = ['uuid', 'created_at']
+
 
 class CourseLessonSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)

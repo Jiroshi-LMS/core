@@ -42,13 +42,18 @@ class CourseServices:
     @staticmethod
     def update_course_info(validated_data: dict, course: Course, instructor: Instructor) -> Course:
         with transaction.atomic():
-            if 'thumbnail' in validated_data and course.thumbnail != validated_data.get('thumbnail'):
+            if validated_data.get('thumbnail') and course.thumbnail != validated_data.get('thumbnail'):
                 S3Utils.delete_via_object_key(
                     object_keys=[course.thumbnail],
                     bucket_name=ENV.S3_STATIC_BUCKET
                 )
-            if 'access_status' in validated_data and course.access_status != validated_data.get('access_status'):
+            if validated_data.get('access_status'):
+                access_status_string = 'active'
+            else:
+                access_status_string = 'inactive' if course.access_status in ['active', 'inactive'] else 'draft'
+            if access_status_string == 'active':
                 CourseServices.validate_lesson_count_for_toggle(course, instructor)
+            validated_data['access_status'] = access_status_string
             return course_selector.update(validated_data, course)
 
     @staticmethod
