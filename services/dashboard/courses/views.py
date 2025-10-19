@@ -129,7 +129,7 @@ class CourseViewSet(ModelViewSet):
         course = self.get_object()
         CourseServices.soft_delete_course(course, request.user)
         return Res(
-            status.HTTP_204_NO_CONTENT, True,
+            status.HTTP_200_OK, True,
             msg="Course deleted successfully."
         ).json()
 
