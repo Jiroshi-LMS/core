@@ -61,6 +61,7 @@ class CourseLesson(TimeStampedModel, SoftDeleteMixin):
     class Meta:
         db_table = 'course_lessons'
         verbose_name_plural = 'Course Lessons'
+        unique_together=['course', 'title']
         ordering = ['-created_at']
 
     @property
