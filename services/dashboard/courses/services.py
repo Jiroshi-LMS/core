@@ -7,14 +7,14 @@ from .models import Instructor, Course, CourseLesson, LessonResource
 from .selectors import (
     CourseSelector,
     LessonSelector,
-    LessonResource
+    LessonResourceSelector
 )
 
 
 
 course_selector = CourseSelector()
 lesson_selector = LessonSelector()
-resource_selector = LessonResource()
+resource_selector = LessonResourceSelector()
 
 
 class CourseServices:

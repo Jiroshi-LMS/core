@@ -75,7 +75,7 @@ class LessonResource(TimeStampedModel, SoftDeleteMixin):
     title = models.CharField(max_length=255)
     file_name = models.CharField(max_length=255)
     file_size = models.IntegerField()
-    file_type = models.CharField(max_length=20)
+    file_type = models.CharField(max_length=128)
     file_key = models.CharField(max_length=255, null=True, blank=True)
     created_by = models.ForeignKey(
         Instructor, on_delete=models.DO_NOTHING, related_name='lesson_resources', null=True, blank=True
