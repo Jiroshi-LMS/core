@@ -82,7 +82,7 @@ class CourseUpdateSerializer(serializers.ModelSerializer):
 
 class CourseLessonSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
-    description = serializers.CharField(required=False, default="")
+    description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     duration = serializers.IntegerField(required=False, default=0)
     access_status = serializers.CharField(read_only=True)
     media_key = serializers.CharField(required=False, default=None, write_only=True)
