@@ -10,7 +10,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
-from .filters import CourseFilters
+from .filters import CourseFilters, LessonFilters
 from .models import Course, CourseLesson, LessonResource
 from .selectors import CourseSelector, LessonSelector, LessonResourceSelector
 from .serializers import (
@@ -38,7 +38,7 @@ class CourseViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseFilters
     search_fields = ['title', 'description']
-    ordering_fields = ['created_at']
+    ordering_fields = ['created_at', 'duration']
     ordering = ['-created_at']
 
     lookup_field = 'uuid'
@@ -139,12 +139,17 @@ class CourseLessonViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = CourseLessonSerializer
     pagination_class = CustomPaginator
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = LessonFilters
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'duration']
+    ordering = ['-created_at']
 
     lookup_field = 'uuid'
     lookup_value_regex = "[0-9a-f-]+"
 
     def get_queryset(self):
-        return CourseLesson.objects.filter(created_by=self.request.user).order_by('-created_at', '-id')
+        return CourseLesson.objects.filter(created_by=self.request.user)
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
