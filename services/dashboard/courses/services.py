@@ -134,7 +134,7 @@ class LessonResourceServices:
     @staticmethod
     def list_resources(lesson_uuid: str, instructor: Instructor) -> dict:
         lesson = lesson_selector.by_uuid(lesson_uuid, instructor)
-        file_resources = resource_selector.by_lesson(lesson)
+        file_resources = resource_selector.by_lesson(lesson, instructor)
         return {
             'lesson_id': lesson.uuid,
             'notes': lesson.notes,

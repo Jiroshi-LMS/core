@@ -84,7 +84,7 @@ class LessonResourceSelector():
             created_by = instructor
         )
     
-    def by_lesson(self, lesson, instructor: Instructor, instructor_check=True):
+    def by_lesson(self, lesson, instructor: Instructor | None = None, instructor_check=True):
         if instructor_check:
             return LessonResource.objects.filter(lesson=lesson, created_by=instructor)
         return LessonResource.objects.filter(lesson=lesson)
