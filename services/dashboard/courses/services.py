@@ -107,7 +107,7 @@ class CourseLessonServices:
         if course.duration <= 0:
             course.duration = 0
             course.access_status = 'draft'
-            course.save()
+        course.save()
         lesson.delete()
 
 

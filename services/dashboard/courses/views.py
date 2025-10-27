@@ -236,7 +236,7 @@ class CourseLessonViewSet(ModelViewSet):
         lesson = self.get_object()
         CourseLessonServices.soft_delete_lesson(lesson, request.user)
         return Res(
-            status.HTTP_204_NO_CONTENT, True, 
+            status.HTTP_200_OK, True, 
             msg="Lesson deleted successfully."
         ).json()
     
