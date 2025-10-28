@@ -137,7 +137,7 @@ class LessonResourceServices:
         lesson = lesson_selector.by_uuid(validated_data['lesson_uuid'], instructor)
         if validated_data.get('notes'):
             lesson.notes = validated_data.get('notes')
-        if validated_data.get('related_links'):
+        if validated_data.get('related_links') is not None:
             lesson.related_links = validated_data.get('related_links')
         lesson.save()
         return lesson
