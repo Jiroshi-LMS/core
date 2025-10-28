@@ -122,7 +122,7 @@ class CourseLessonRetrieveSerializer(serializers.ModelSerializer):
 class CourseLessonUpdateSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=False)
     description = serializers.CharField(required=False, allow_blank=True)
-    access_status = serializers.CharField(required=False)
+    access_status = serializers.BooleanField(required=False)
 
     class Meta:
         model = CourseLesson

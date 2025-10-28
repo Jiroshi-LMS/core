@@ -74,6 +74,17 @@ class CourseLessonServices:
         )
     
     @staticmethod
+    def update_lesson(validated_data: dict, lesson: CourseLesson):
+        if validated_data.get('access_status'):
+            access_status_string = 'active'
+        else:
+            access_status_string = 'inactive' if lesson.access_status in ['active', 'inactive'] else 'draft'
+        if access_status_string == 'active' and lesson.media_key == None:
+            raise ValueError("Can't set lesson as active, video has not been uploaded yet!")
+        validated_data['access_status'] = access_status_string
+        lesson = lesson_selector.update(validated_data, lesson)
+    
+    @staticmethod
     def update_lesson_media(
         lesson_media: str, 
         media_duration: int, 

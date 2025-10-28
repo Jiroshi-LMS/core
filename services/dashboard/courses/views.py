@@ -150,6 +150,12 @@ class CourseLessonViewSet(ModelViewSet):
 
     def get_queryset(self):
         return CourseLesson.objects.filter(created_by=self.request.user)
+    
+    def get_object(self):
+        uuid = self.kwargs.get('uuid')
+        if uuid:
+            return CourseLesson.objects.get(uuid=uuid, created_by=self.request.user)
+        return super().get_object()
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
@@ -223,11 +229,10 @@ class CourseLessonViewSet(ModelViewSet):
         serializer = CourseLessonUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         lesson = self.get_object()
-        validated_data = serializer.validated_data
-        lesson = lesson_selector.update(validated_data, lesson)
+        CourseLessonServices.update_lesson(serializer.validated_data, lesson)
         return Res(
             status.HTTP_200_OK, True, 
-            data=validated_data,
+            data=serializer.validated_data,
             msg="Lesson updated successfully."
         ).json()
     
