@@ -65,10 +65,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
     # Custom middleware for comprehensive logging
-    'core.middleware.APILoggingMiddleware',
-    'core.middleware.SecurityHeadersMiddleware',
-    'core.middleware.RateLimitMiddleware',
 ]
+
+if not DEBUG:
+    MIDDLEWARE += [
+        'core.middleware.APILoggingMiddleware',
+        'core.middleware.SecurityHeadersMiddleware',
+        'core.middleware.RateLimitMiddleware',
+    ]
 
 ROOT_URLCONF = 'dashboard.urls'
 
