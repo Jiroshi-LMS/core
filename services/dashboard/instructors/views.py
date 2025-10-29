@@ -30,7 +30,7 @@ instructor_selector = InstructorSelector()
     
 
 class InstructorViewSet(viewsets.ModelViewSet):
-    queryset = Instructor.objects.all()
+    queryset = Instructor.objects.select_related('profile').all()
     serializer_class = InstructorSerializer
 
     @handle_exceptions

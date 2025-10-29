@@ -38,7 +38,7 @@ class InstructorProfile(TimeStampedModel, SoftDeleteMixin):
     """
         Instructor Profile and related information.
     """
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='profiles', unique=True)
+    instructor = models.OneToOneField(Instructor, on_delete=models.CASCADE, related_name='profile', unique=True)
     profile_picture = models.CharField(max_length=255, null=True, blank=True)
     location = models.CharField(max_length=255, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
