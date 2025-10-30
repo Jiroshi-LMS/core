@@ -87,7 +87,7 @@ class CourseLessonServices:
     @staticmethod
     def update_lesson_media(
         lesson_media: str, 
-        media_duration: int, 
+        media_duration: float, 
         lesson: CourseLesson, 
         instructor: Instructor
     ) -> tuple[CourseLesson, Course]:

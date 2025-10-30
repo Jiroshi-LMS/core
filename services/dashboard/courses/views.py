@@ -209,7 +209,7 @@ class CourseLessonViewSet(ModelViewSet):
         """
         lesson = self.get_object()
         lesson_media = request.data.get('media_key')
-        media_duration = int(request.data.get('media_duration'))
+        media_duration = float(request.data.get('media_duration'))
         if not lesson_media or not media_duration:
             return Res(
                 status.HTTP_400_BAD_REQUEST, False, 
