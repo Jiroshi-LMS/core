@@ -11,7 +11,7 @@ class CourseSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, allow_null=True)
     thumbnail = serializers.CharField(required=True, write_only=True)
-    duration = serializers.FloatField(required=False, default=0)
+    duration = serializers.DecimalField(default=0, max_digits=10, decimal_places=4, required=False)
     access_status = serializers.CharField(read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(
         read_only=True
@@ -41,7 +41,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class CourseRetrieveSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
-    duration = serializers.FloatField(required=False, default=None)
+    duration = serializers.DecimalField(default=0, max_digits=10, decimal_places=4, required=False)
     access_status = serializers.CharField(read_only=True)
     thumbnail_url = serializers.SerializerMethodField()
     enrollments = serializers.SerializerMethodField()
@@ -83,7 +83,7 @@ class CourseUpdateSerializer(serializers.ModelSerializer):
 class CourseLessonSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    duration = serializers.FloatField(required=False, default=0)
+    duration = serializers.DecimalField(default=0, max_digits=10, decimal_places=4, required=False)
     access_status = serializers.CharField(read_only=True)
     media_key = serializers.CharField(required=False, default=None, write_only=True)
     media_size = serializers.IntegerField(read_only=True)
@@ -102,7 +102,7 @@ class CourseLessonSerializer(serializers.ModelSerializer):
 class CourseLessonRetrieveSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
-    duration = serializers.FloatField(required=False, default=None)
+    duration = serializers.DecimalField(default=0, max_digits=10, decimal_places=4, required=False)
     access_status = serializers.CharField(read_only=True)
     media_size = serializers.IntegerField(read_only=True)
     video_url = serializers.SerializerMethodField()
