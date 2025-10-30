@@ -11,7 +11,7 @@ class CourseSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, allow_null=True)
     thumbnail = serializers.CharField(required=True, write_only=True)
-    duration = serializers.IntegerField(required=False, default=0)
+    duration = serializers.FloatField(required=False, default=0)
     access_status = serializers.CharField(read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(
         read_only=True
@@ -41,7 +41,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class CourseRetrieveSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
-    duration = serializers.IntegerField(required=False, default=None)
+    duration = serializers.FloatField(required=False, default=None)
     access_status = serializers.CharField(read_only=True)
     thumbnail_url = serializers.SerializerMethodField()
     enrollments = serializers.SerializerMethodField()
@@ -83,16 +83,18 @@ class CourseUpdateSerializer(serializers.ModelSerializer):
 class CourseLessonSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    duration = serializers.IntegerField(required=False, default=0)
+    duration = serializers.FloatField(required=False, default=0)
     access_status = serializers.CharField(read_only=True)
     media_key = serializers.CharField(required=False, default=None, write_only=True)
+    media_size = serializers.IntegerField(read_only=True)
     course_uuid = serializers.UUIDField(write_only=True)
 
     class Meta:
         model = CourseLesson
         fields = [
             'uuid', 'created_at', 'title', 'access_status',
-            'description', 'duration', 'media_key', 'course_uuid'
+            'description', 'duration', 'media_key', 'media_size',
+            'course_uuid'
         ]
         read_only_fields = ['uuid', 'created_at']
 
@@ -100,15 +102,16 @@ class CourseLessonSerializer(serializers.ModelSerializer):
 class CourseLessonRetrieveSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
-    duration = serializers.IntegerField(required=False, default=None)
+    duration = serializers.FloatField(required=False, default=None)
     access_status = serializers.CharField(read_only=True)
+    media_size = serializers.IntegerField(read_only=True)
     video_url = serializers.SerializerMethodField()
 
     class Meta:
         model = CourseLesson
         fields = [
             'uuid', 'created_at', 'title', 'access_status',
-            'description', 'duration', 'video_url'
+            'description', 'duration', 'video_url', 'media_size'
         ]
         read_only_fields = ['uuid', 'created_at']
 
