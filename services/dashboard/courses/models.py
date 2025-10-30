@@ -50,6 +50,7 @@ class CourseLesson(TimeStampedModel, SoftDeleteMixin):
     duration = models.FloatField(default=0)
     access_status = models.CharField(max_length=20, choices=ACCESS_STATUS_CHOICES, default='draft')
     media_key = models.CharField(max_length=255, null=True, blank=True)
+    media_size = models.BigIntegerField(default=0)
     created_by = models.ForeignKey(
         Instructor, on_delete=models.DO_NOTHING, related_name='lessons'
     )
@@ -74,7 +75,7 @@ class LessonResource(TimeStampedModel, SoftDeleteMixin):
     lesson = models.ForeignKey(CourseLesson, on_delete=models.CASCADE, related_name='resources')
     title = models.CharField(max_length=255)
     file_name = models.CharField(max_length=255)
-    file_size = models.IntegerField()
+    file_size = models.BigIntegerField()
     file_type = models.CharField(max_length=128)
     file_key = models.CharField(max_length=255, null=True, blank=True)
     created_by = models.ForeignKey(

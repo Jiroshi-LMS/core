@@ -87,7 +87,8 @@ class CourseLessonServices:
     @staticmethod
     def update_lesson_media(
         lesson_media: str, 
-        media_duration: float, 
+        media_duration: float,
+        media_size: int,
         lesson: CourseLesson, 
         instructor: Instructor
     ) -> tuple[CourseLesson, Course]:
@@ -96,6 +97,7 @@ class CourseLessonServices:
             S3Utils.delete_via_object_key(object_keys=[existing_media_key])
         lesson.media_key = lesson_media
         lesson.duration = media_duration
+        lesson.media_size=media_size
         if lesson.access_status == 'draft':
             lesson.access_status = 'active'
         lesson.save()

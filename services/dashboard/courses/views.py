@@ -210,13 +210,14 @@ class CourseLessonViewSet(ModelViewSet):
         lesson = self.get_object()
         lesson_media = request.data.get('media_key')
         media_duration = float(request.data.get('media_duration'))
-        if not lesson_media or not media_duration:
+        media_size = int(request.data.get('media_size'))
+        if not lesson_media or not media_duration or not media_size:
             return Res(
                 status.HTTP_400_BAD_REQUEST, False, 
-                msg="Missing required fields: media_key, media_duration."
+                msg="Missing required fields: media_key, media_duration, media_size."
             ).json()
         lesson, course = CourseLessonServices.update_lesson_media(
-            lesson_media, media_duration, lesson, request.user
+            lesson_media, media_duration, media_size, lesson, request.user
         )
         return Res(
             status.HTTP_200_OK, True, 
