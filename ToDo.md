@@ -11,6 +11,8 @@
 
 - Store lesson video size as well
 - Store more precise lesson video duration
+- Look for API bottlenecks and slow api process
+- Apply caching and cache invalidation where-ever its required
 
 # IMPORTANT
 
