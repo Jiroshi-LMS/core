@@ -1,110 +1,112 @@
-# Jiroshi Scope Document
-
-## Project Goal
-Jiroshi is a headless Learning Management System (LMS) designed as a **polyglot monorepo project**.  
-The primary goal is **deep learning of backend engineering concepts** (scalability, clean code, distributed systems, best practices) while also building a **functional full-stack application**.
-
----
-
-## Key Objectives
-1. Learn advanced backend design patterns and practices by building a real-world system.
-2. Explore **polyglot backend development** using Django (Python), Node.js, and Go.
-3. Implement **scalable architecture principles** with clear separation of concerns.
-4. Gain experience with **monorepo to microservices migration**.
-5. Practice with **infrastructure tooling** like Docker, Redis, Postgres, MinIO, Kubernetes.
+# Jiroshi — MVP Scope Document  
+**Date:** 2025-11-01  
+**Target MVP Release:** 2026-01-01  
+**Stage:** Alpha / Private Preview
 
 ---
 
-## System Scope
+## 🎯 Project Goal
+**Jiroshi** is a **Headless Learning Management System (LMS)** — a Platform-as-a-Service (PaaS) that enables instructors and institutions to launch their own branded LMS without managing backend infrastructure.  
 
-### Core Features
-#### Phase 1 (MVP – Monorepo)
-- **User Authentication (Django)**  
-  - User registration & login  
-  - JWT-based authentication  
-  - Roles: Admin, Instructor, Student  
-
-- **Course Management (Node.js)**  
-  - Create, read, update, delete courses  
-  - Associate lessons, quizzes, and notes with courses  
-  - Assign instructors to courses  
-
-- **Media Handling (Go)**  
-  - Upload & store course media (videos, PDFs, images) in MinIO  
-  - Provide signed URLs for secure access  
-  - Support video streaming  
-
-- **Frontend (Next.js)**  
-  - Basic dashboard for students & instructors  
-  - Course browsing, enrollment, and viewing  
-  - Auth integration with backend  
-
-- **Infrastructure**  
-  - Local development with Docker Compose  
-  - Postgres for relational data  
-  - Redis for caching & sessions  
-  - MinIO (S3-compatible) for media storage  
+**MVP objective:** deliver a minimal, secure, and extensible platform that lets instructors manage courses & lessons via a dashboard and exposes headless APIs for frontends to consume.
 
 ---
 
-#### Phase 2 (Scalability & Microservices)
-- Split services into independent deployable units  
-- gRPC between Node ↔ Go for streaming use cases  
-- Add rate-limiting & API gateway (Kong/Traefik)  
-- Implement background jobs (Celery/Redis Queue/Go workers)  
-- Introduce logging & monitoring (ELK, Prometheus, Grafana)  
+## 🧩 System Scope (Alpha Phase)
+
+### 1. Instructor Dashboard (Backend: Django / Frontend: Next.js)
+The dashboard is the control center for instructors to manage their LMS.
+
+#### 🔐 Authentication & Authorization
+- Instructor registration & login (JWT-based).
+- Basic password reset & profile update.
+
+#### 📚 Course & Lesson Management
+- CRUD for Courses and Lessons.
+- Associate resources (video links, PDFs, PPTs, GIFs, external URLs) with lessons.
+- Course visibility flags: `Public`, `Private`, `Paid` *(Paid as a placeholder for Phase 1)*.
+- Soft-delete with delayed purge (15–30 days).
+- (Optional stretch) Course duplication / cloning.
+
+#### 🗂️ Media & File Handling
+- File uploads to S3-compatible storage (metadata tracked in DB).
+- Secure access via signed URLs.
+- Track S3 object keys and statuses in a metadata table.
+- Simple file listing UI in the dashboard (read-only in alpha).
+- Ensure deletion workflow revokes signed URLs and marks files for purge.
+
+#### 🔑 API Key Management
+- Generate and revoke **Public (GET)** and **Private (WRITE)** API keys for each instructor account.
+- Keys scoped to instructor and purpose (read-only vs write).
+- Basic usage tracking (placeholder).
+
+#### 📈 Student & Enrollment Tracking
+- Store minimal enrolled-user records (UUID, email, course_id).
+- Basic enrollment list and counts for the dashboard.
 
 ---
 
-#### Phase 3 (Production Readiness)
-- Kubernetes-based deployment  
-- CI/CD pipeline (GitHub Actions/GitLab CI)  
-- Observability (tracing, logging, metrics)  
-- Role-based access with fine-grained permissions  
-- Payment & subscription system (Stripe/Razorpay integration)  
+### 2. Headless APIs (Backend: Node.js + TypeScript)
+Public API layer for instructor frontends (web / mobile).
+
+#### 🧾 Authentication APIs (for instructor's users)
+- JWT-based signup & login for learners.
+- User profile fetch & update.
+
+#### 🎓 Course & Lesson APIs
+- Video/Document (PPTX/PDF/...) based Course & Lesson Creation Flow
+- List published courses (read-only public endpoint).
+- Fetch course details and lesson lists.
+- Fetch lesson resources (authenticated where required).
+- Enrollment endpoint (protected — requires appropriate token).
+- Ensure APIs check ownership and enforce basic RLS/selector filters.
+
+**Security notes:**  
+- Private endpoints require instructor Private API key or authenticated context.  
+- Public endpoints limited to safe read-only data.
 
 ---
 
-## Out of Scope (For Now)
-- Mobile applications  
-- AI/ML-powered personalization or recommendations  
-- Multi-tenant SaaS setup  
-- Marketplace features (course sales, creator economy)  
+### 3. Demo Frontend (Next.js)
+Lightweight demo to showcase the headless integration.
 
-These can be explored in **future iterations** after core system stability.
-
----
-
-## Learning Goals
-- **System Design:** Clean modular boundaries, service decomposition, scalability principles.  
-- **Databases:** Postgres schema design, migrations, optimization, caching strategies.  
-- **Polyglot Programming:** Understand trade-offs of Django, Node.js, and Go in real use.  
-- **Service Communication:** REST, gRPC, and message queues.  
-- **Infra & DevOps:** Docker, Kubernetes, CI/CD, monitoring & logging.  
+#### Key Pages
+- Home — list of courses.
+- Course details — description + enroll button.
+- Lessons list.
+- Lesson viewer — handles doc (PDF/PPT/GIF) and video link rendering.
 
 ---
 
-## Deliverables
-1. **Working Monorepo (Phase 1)** with Django, Node.js, Go, Postgres, Redis, MinIO.  
-2. **Documentation** (Architecture.md, Scope.md, ADRs).  
-3. **Frontend (Next.js)** integrated with backend APIs.  
-4. Migration plan to **microservices architecture**.  
-5. Deployment scripts (Docker Compose → Kubernetes).  
+## 🧱 Post-Alpha Roadmap
+
+- **Payments:** Razorpay integration for paid courses.
+- **Advanced Permissions:** Fine-grained ACL and team roles.
+- **Quizzes & Labs:** Interactive assessments, auto-grading (Phase 2).
+- **SDK's for multiple programming langs:** Software dev kits for implementing API calls instead of manully writing calls.
+- **Code Snippets and Embeds:** Code embeds for implementing features like video player or pptx viewer with ease.
+- **Team Collaboration Support**: Create an organization on dashboard, add other instructors to contribute to course creation and maintainance.
+- **Export & Data Portability:** Manifest-based exports / ZIP export (deferred).
+- **Streaming Optimization:** Adaptive streaming (HLS) for video.
+- **Auth Enhancements:** SSO / OAuth integrations.
+- **Observability & Performance:** Logging, caching, rate limiting, DB optimizations.
+- **Go Migration (optional):** Rewriting high-throughput services for scale.
 
 ---
 
-## Timeline (Rough)
-- **Month 1:** Monorepo MVP (Auth + Courses + Media + Frontend + Infra basics).  
-- **Month 2:** Refactor for scalability, introduce gRPC, caching, and queues.  
-- **Month 3:** Production readiness — monitoring, CI/CD, Kubernetes.  
+## 🌍 Long-Term Vision
+- DRM for digital content protection.
+- Live streaming & webinars.
+- Advanced analytics and learning pipelines (ClickHouse / CDC).
+- Drag and Drop Based LMS Frontend Creation Tool
+- Marketplace for templates, plugins, and instructor tools.
+
 
 ---
 
-## Success Criteria
-- The system runs locally with all services communicating.  
-- Each service is **cleanly separated** with its own responsibilities.  
-- The repo contains **documentation, infra setup, and clean code practices**.  
-- Migration from monorepo → microservices is possible without rewriting everything.  
-
----
-
+## 💡 Notes for Partners / Pilot Institutions
+- MVP focuses on **core functionality**, not completeness or final UI polish.
+- Early collaborators will shape Phase 1 / Phase 2 priorities.
+- Feature requests are categorized as:
+  - **Core Fit:** benefits all users — prioritized.
+  - **Custom Extension:** partner-specific — considered as paid customization or Phase 2 work.
