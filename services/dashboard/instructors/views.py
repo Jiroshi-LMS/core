@@ -233,6 +233,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
                 msg="Provided current password is incorrect."
             ).json()
         instructor.set_password(new_password)
+        instructor.save()
         return Res(
             status.HTTP_200_OK, True, 
             msg="Instructor's password updated successfully."
