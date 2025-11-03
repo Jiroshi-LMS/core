@@ -117,6 +117,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
         instructor = instructor_selector.get_by_id(request.user.id)
         serializer = InstructorProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
 
         def all_profile_data_exists(profile_data):
             for value in profile_data.values():
@@ -125,7 +126,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
             return True
 
         profile_completion = 'complete'
-        if not instructor.phone_number or not all_profile_data_exists(serializer.validated_data):
+        if not instructor.phone_number or not all_profile_data_exists(validated_data):
             profile_completion = 'partial'
 
         try:
@@ -133,11 +134,12 @@ class InstructorViewSet(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             profile = None
 
-        if profile and profile.profile_picture:
+        is_profile_picture_valid = validated_data.get('profile_picture') != None and validated_data('profile_picture') != ""
+        if profile and profile.profile_picture and is_profile_picture_valid:
             S3Utils.delete_via_object_key(object_keys=[profile.profile_picture], bucket_name=ENV.S3_STATIC_BUCKET)
 
         with transaction.atomic():
-            profile, created = instructor_selector.create_update_profile(instructor, serializer.validated_data)
+            profile, created = instructor_selector.create_update_profile(instructor, validated_data, is_profile_picture_valid)
             instructor.profile_completion_status = profile_completion
             instructor.save()
         

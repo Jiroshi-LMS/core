@@ -9,7 +9,7 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.CharField(required=False, allow_null=True, write_only=True)
     location = serializers.CharField(required=False, allow_null=True)
     bio = serializers.CharField(required=False, allow_null=True)
-    profile_picture_url = serializers.SerializerMethodField()
+    profile_picture_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = InstructorProfile

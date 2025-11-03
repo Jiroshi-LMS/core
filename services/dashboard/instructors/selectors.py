@@ -34,17 +34,19 @@ class InstructorSelector:
             phone_number=valid_instructor_data.get('phone_number')
         )
     
-    def create_update_profile(self, instructor: Instructor, valid_profile_data: dict):
+    def create_update_profile(self, instructor: Instructor, valid_profile_data: dict, is_profile_picture_valid: bool):
         """
         Create or update an instructor profile.
         """
+        update_params = {
+            'location': valid_profile_data.get('location'),
+            'bio': valid_profile_data.get('bio'),
+        }
+        if is_profile_picture_valid:
+            update_params['profile_picture'] = valid_profile_data.get('profile_picture')
         return InstructorProfile.objects.update_or_create(
             instructor=instructor,
-            defaults={
-                'profile_picture': valid_profile_data.get('profile_picture'),
-                'location': valid_profile_data.get('location'),
-                'bio': valid_profile_data.get('bio'),
-            }
+            defaults=update_params
         )
     
     def get_profile(self, instructor: Instructor):
