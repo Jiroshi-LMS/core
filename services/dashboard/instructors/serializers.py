@@ -21,8 +21,7 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
 
     def get_profile_picture_url(self, obj):
         profile_picture = obj.profile_picture
-        if not profile_picture:
-            profile_picture = DefaultObjectKeys.PROFILE_PICTURE
+        if not profile_picture: return None
         return Urls.STATIC_S3_URL + profile_picture
     
 
