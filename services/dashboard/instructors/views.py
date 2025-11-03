@@ -134,7 +134,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             profile = None
 
-        is_profile_picture_valid = validated_data.get('profile_picture') != None and validated_data('profile_picture') != ""
+        is_profile_picture_valid = validated_data.get('profile_picture') != None and validated_data.get('profile_picture') != ""
         if profile and profile.profile_picture and is_profile_picture_valid:
             S3Utils.delete_via_object_key(object_keys=[profile.profile_picture], bucket_name=ENV.S3_STATIC_BUCKET)
 
