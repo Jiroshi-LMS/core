@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'instructors',
     'audit',
     'courses',
+    'apikeys',
 ]
 
 MIDDLEWARE = [
