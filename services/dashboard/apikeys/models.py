@@ -18,5 +18,6 @@ class ApiKeys(TimeStampedModel, SoftDeleteMixin):
     expires_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        unique_together = ['instructor', 'key_name', 'key_type']
         managed=True
         db_table="instructors_apikeys"
