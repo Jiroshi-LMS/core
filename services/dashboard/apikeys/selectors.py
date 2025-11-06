@@ -1,3 +1,4 @@
+from django.utils import timezone
 from instructors.models import Instructor
 from .models import ApiKeys
 
@@ -34,3 +35,9 @@ class APIKeysSelectors:
         keys = ApiKeys.objects.bulk_create(instructor_keys)
         return keys[0].uuid, keys[1].uuid
 
+    @staticmethod
+    def get_active_keys(instructor: Instructor):
+        """
+            List all active API Keys
+        """
+        return ApiKeys.objects.filter(instructor=instructor, expires_at__gt=timezone.now())

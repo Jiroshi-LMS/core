@@ -11,6 +11,9 @@ class APIKeysServices:
             Method to generate pair of public and private
             API Keys for the instructor
         """
+        active_key_count = APIKeysSelectors.get_active_keys(instructor).count()
+        if active_key_count >= 4:
+            raise ValueError("Can't have more than 4 API Keys active at the same time !")
         pub_key_bytes, pub_key = generate_secret(32)
         pub_key_hash = bcrypt.hashpw(pub_key_bytes, bcrypt.gensalt()).decode()
         pvt_key_bytes, pvt_key = generate_secret(32)

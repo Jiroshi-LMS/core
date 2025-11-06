@@ -1,18 +1,29 @@
 from core.decorators import handle_exceptions
-from core.utilities import Res
+from core.utilities import Res, CustomPaginator
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from .models import ApiKeys
 from .services import APIKeysServices
-from .serializers import APIKeyBaseSerializer
+from .serializers import APIKeyBaseSerializer, APIKeyListSerializer
 
 
 
 class APIKeysViewset(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = APIKeyBaseSerializer
+    pagination_class = CustomPaginator
+
+    lookup_field = 'uuid'
+    lookup_value_regex = "[0-9a-f-]+"
+
+    def get_queryset(self):
+        return ApiKeys.all_objects.all()
+
+    def get_object(self):
+        return ApiKeys.all_objects.get(uuid=self.kwargs['uuid'])
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
@@ -28,6 +39,23 @@ class APIKeysViewset(ModelViewSet):
             },
             msg="API Keys Generated Successfully !"
         ).json()
-    
-    
+
+    @handle_exceptions
+    def list(self, request, *args, **kwargs):
+        query = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(query)
+        serializer = APIKeyListSerializer(page, many=True)
+        return self.paginator.get_paginated_response(
+            data=serializer.data, 
+            msg="Courses retrieved successfully."
+        )
+
+    @handle_exceptions
+    def delete(self, request, *args, **kwargs):
+        apikey_instance = self.get_object()
+        apikey_instance.hard_delete()
+        return Res(
+            msg="API Key has been permanently deleted !"
+        ).json()
+
 
