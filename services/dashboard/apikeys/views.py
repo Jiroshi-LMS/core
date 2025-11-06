@@ -20,7 +20,7 @@ class APIKeysViewset(ModelViewSet):
     lookup_value_regex = "[0-9a-f-]+"
 
     def get_queryset(self):
-        return ApiKeys.all_objects.all()
+        return ApiKeys.all_objects.filter(instructor=self.request.user)
 
     def get_object(self):
         return ApiKeys.all_objects.get(uuid=self.kwargs['uuid'])
@@ -51,10 +51,11 @@ class APIKeysViewset(ModelViewSet):
         )
 
     @handle_exceptions
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         apikey_instance = self.get_object()
         apikey_instance.hard_delete()
         return Res(
+            code=status.HTTP_200_OK,
             msg="API Key has been permanently deleted !"
         ).json()
 

@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.db.models import Q
 from instructors.models import Instructor
 from .models import ApiKeys
 
@@ -40,4 +41,4 @@ class APIKeysSelectors:
         """
             List all active API Keys
         """
-        return ApiKeys.objects.filter(instructor=instructor, expires_at__gt=timezone.now())
+        return ApiKeys.objects.filter(Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now()), instructor=instructor)
