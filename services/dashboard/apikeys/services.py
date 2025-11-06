@@ -1,0 +1,34 @@
+import bcrypt
+from django.utils import timezone
+from instructors.models import Instructor
+from core.helpers import generate_secret
+from .selectors import APIKeysSelectors
+
+class APIKeysServices:
+    @staticmethod
+    def gen_keys(instructor: Instructor, validated_data):
+        """
+            Method to generate pair of public and private
+            API Keys for the instructor
+        """
+        pub_key_bytes, pub_key = generate_secret(32)
+        pub_key_hash = bcrypt.hashpw(pub_key_bytes, bcrypt.gensalt()).decode()
+        pvt_key_bytes, pvt_key = generate_secret(32)
+        pvt_key_hash = bcrypt.hashpw(pvt_key_bytes, bcrypt.gensalt()).decode()
+        
+        expiry_days = validated_data.get('expires_at', None)
+        if not expiry_days == None:
+            expiry_utc = timezone.now() + timezone.timedelta(days=expiry_days) 
+            validated_data['expires_at'] = expiry_utc
+        pub_uuid, pvt_uuid = APIKeysSelectors.create_key(
+            pub_key_hash, 
+            pvt_key_hash, 
+            validated_data, 
+            instructor
+        )
+
+        pub_string = f"pk_{pub_uuid}_{pub_key}"
+        pvt_string = f"sk_{pvt_uuid}_{pvt_key}"
+
+        return pub_string, pvt_string
+        

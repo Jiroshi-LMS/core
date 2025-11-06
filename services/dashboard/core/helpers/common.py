@@ -1,6 +1,9 @@
+import base64
 import mimetypes
 import re
+import secrets
 from core.constants import PresignedPrefix
+
 
 def flatten_serializer_errors(detail):
     """
@@ -62,3 +65,9 @@ def get_presigned_object_key(
         object_key += f"{specific_uuid}/"
     object_key += f"{file_name}{extension}"
     return object_key
+
+
+def generate_secret(size: int) -> str:
+    raw = secrets.token_bytes(32)
+    secret = base64.urlsafe_b64encode(raw).decode()
+    return raw, secret
