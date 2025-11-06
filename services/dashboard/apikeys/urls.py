@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from .views import APIKeysViewset
+from . import views
 
 router = routers.DefaultRouter()
 router.register(r'views', views.APIKeysViewset, basename="apikeys")
