@@ -42,7 +42,7 @@ class APIKeysViewset(ModelViewSet):
 
     @handle_exceptions
     def list(self, request, *args, **kwargs):
-        query = self.filter_queryset(self.get_queryset())
+        query = self.filter_queryset(self.get_queryset().order_by('-created_at'))
         page = self.paginate_queryset(query)
         serializer = APIKeyListSerializer(page, many=True)
         return self.paginator.get_paginated_response(

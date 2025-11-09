@@ -6,11 +6,11 @@ from .models import ApiKeys
 
 class APIKeyBaseSerializer(serializers.ModelSerializer):
     key_name = serializers.CharField(required=True)
-    expires_at = serializers.IntegerField(required=True, allow_null=True)
+    expires_at_days = serializers.IntegerField(required=True, allow_null=True)
 
     class Meta:
         model=ApiKeys
-        fields = ['key_name', 'expires_at']
+        fields = ['key_name', 'expires_at_days']
 
 
 class APIKeyListSerializer(serializers.ModelSerializer):
@@ -23,7 +23,7 @@ class APIKeyListSerializer(serializers.ModelSerializer):
         model=ApiKeys
         fields = ['uuid', 'key_name', 
                   'key_type', 'status', 
-                  'expires_at']
+                  'expires_at', 'created_at']
 
     def get_status(self, obj):
         if not obj.deleted_at == None:
