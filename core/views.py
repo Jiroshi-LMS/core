@@ -10,6 +10,11 @@ from .utilities import Res, S3Utils
 
 
 
+class HealthCheckView(APIView):
+    def get(self, request):
+        return Res(msg="Ok").text()
+
+
 class GetUploadPresignedURL(APIView):
     """
         Get a presigned URL for a given S3 object.
