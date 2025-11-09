@@ -1,18 +1,18 @@
+
 FROM python:3.11.7
 
-# Set environment variables
+# Prevent Python from writing .pyc files and enable output flushing
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system deps required for psycopg2 and other packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
-        default-libmysqlclient-dev \
-        pkg-config \
+        libpq-dev \
         curl \
         git \
         netcat-traditional \
@@ -22,31 +22,20 @@ RUN apt-get update \
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
+# Copy the project code
 COPY . /app/
 
-# Create directories and static directory (must exist before Django settings load)
+# Create directories
 RUN mkdir -p /app/staticfiles /app/media /app/logs /app/static
 
-# Create non-root user and set permissions
+# Create non-root user
 RUN adduser --disabled-password --gecos '' appuser \
     && chown -R appuser:appuser /app
 
-# Switch to non-root user
 USER appuser
 
-# Setup Logs
-RUN mkdir -p /app/logs
-
-# Collect static files
-# RUN python manage.py collectstatic --noinput
-
-# Expose port
 EXPOSE 8001
 
-# Health check
-# HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-#     CMD curl -f http://localhost:8001/health/ || exit 1
-
-# Start server
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "config.asgi:application"]
+# If you will run with docker-compose, let compose handle workers / gunicorn later
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8001"]
+
