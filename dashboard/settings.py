@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'audit',
     'courses',
     'apikeys',
+    'headless.instructor',
     'headless.students',
     'headless.enrollments',
 ]
