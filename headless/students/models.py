@@ -16,4 +16,4 @@ class Student(TimeStampedModel, SoftDeleteMixin):
 
     @property
     def owner_field(self):
-        return "created_by"
+        return "instructor"

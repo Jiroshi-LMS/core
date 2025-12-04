@@ -21,3 +21,4 @@ class ApiKeys(TimeStampedModel, SoftDeleteMixin):
         unique_together = ['instructor', 'key_name', 'key_type']
         managed=True
         db_table="instructors_apikeys"
+        ordering = ["-created_at"]
