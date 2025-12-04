@@ -1,8 +1,8 @@
 from datetime import datetime
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from .permissions import IsAuthenticated
 from .constants import ENV, Keywords
 from .decorators import handle_exceptions
 from .helpers import get_presigned_object_key

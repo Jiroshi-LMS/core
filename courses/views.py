@@ -1,13 +1,13 @@
 import structlog
 
 from core.decorators import handle_exceptions
+from core.permissions import IsAuthenticated
 from core.utilities import Res, CustomPaginator
 from django_filters.rest_framework import DjangoFilterBackend
 from instructors.permissions import IsOwner
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import CourseFilters, LessonFilters

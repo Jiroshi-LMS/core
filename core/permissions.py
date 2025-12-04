@@ -1,0 +1,5 @@
+from rest_framework import permissions
+
+class IsAuthenticated(permissions.IsAuthenticated):
+    def has_permission(self, request, view):
+        return super().has_permission(request, view)

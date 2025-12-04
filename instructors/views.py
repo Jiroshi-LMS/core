@@ -3,12 +3,12 @@ import traceback
 
 from core.constants import ENV, CommonErrors
 from core.decorators import handle_exceptions
+from core.permissions import IsAuthenticated
 from core.utilities import Res, S3Utils
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, permission_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
