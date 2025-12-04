@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'audit',
     'courses',
     'apikeys',
+    'headless.students',
+    'headless.enrollments',
 ]
 
 MIDDLEWARE = [
