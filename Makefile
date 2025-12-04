@@ -5,4 +5,4 @@ noreload:
 	python3 manage.py runserver 8001 --noreload
 
 run-tasks:
-	celery -A dashboard worker -l info
+	celery -A config worker -l info

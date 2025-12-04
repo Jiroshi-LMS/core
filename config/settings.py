@@ -78,7 +78,7 @@ if not DEBUG:
         'core.middleware.RateLimitMiddleware',
     ]
 
-ROOT_URLCONF = 'dashboard.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -95,7 +95,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'dashboard.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
