@@ -204,9 +204,11 @@ CELERY_TIMEZONE = 'UTC'
 
 # CORS SETTINGS
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://.*$",
 ]
 
-CORS_URLS_REGEX = r"^/api/v1/public/.*$"
-CORS_ALLOW_CREDENTIALS = True
+# Apply CORS only to headless API
+CORS_URLS_REGEX = r"^/api/.*$"

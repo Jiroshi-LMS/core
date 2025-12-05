@@ -1,25 +1,24 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
-from rest_framework.views import APIView
-from apps.core.utilities import Res
-from apps.core.decorators import handle_exceptions
+from apps.headless.common.utilities.BaseView import HeadlessAPIView
+from apps.headless.common.utilities import (ValidationError)
+from apps.headless.common.utilities import success
 
 from .services import InstructorProfileServices
 from .permissions import IsValidInstructor
 
 
-class InstructorProfileView(APIView):
+class InstructorProfileView(HeadlessAPIView):
     permission_classes = [IsValidInstructor]
     access_type = KEY_TYPES.get('pk')
 
-    @handle_exceptions
     def get(self, request):
         """
-        Fetch instructor and instructor profile details
-        by API Key
+        Fetch instructor and instructor 
+        profile details by API Key
         """
         instructor = request.instructor
         instructor_profile = InstructorProfileServices.get_instructor_profile(instructor)
-        return Res(
+        return success(
             msg="Instructor Profile Fetched !",
             data={
                 "instructor": {
@@ -31,5 +30,5 @@ class InstructorProfileView(APIView):
                 },
                 "profile": instructor_profile
             }
-        ).json()
+        )
     

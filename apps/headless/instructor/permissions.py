@@ -3,7 +3,7 @@ import traceback
 
 from apps.dashboard.apikeys.constants import KEY_SEPARATOR, KEY_TYPES
 from apps.dashboard.apikeys.models import ApiKeys
-from apps.core.constants import HEADLESS_ERR_CODES
+from apps.headless.common.constants import ERR_CODES
 from django.db.models import Q
 from django.utils import timezone
 from apps.dashboard.instructors.models import Instructor
@@ -21,7 +21,7 @@ class IsValidInstructor(permissions.BasePermission):
     def _permission_denied(
             self, 
             msg: str = "Invalid or Expired API Key !",
-            error_code: str = HEADLESS_ERR_CODES.API_KEY_ERR
+            error_code: str = ERR_CODES.API_KEY_ERR
     ):
         return PermissionDenied(detail={
             "status": False,
@@ -70,7 +70,7 @@ class IsValidInstructor(permissions.BasePermission):
         access_type = getattr(view, "access_type", None)    # public/private
         raw_key = request.headers.get('x-api-key');
         if not access_type:
-            raise self._permission_denied("Permission Misconfiguration !", HEADLESS_ERR_CODES.INTERNAL_ERR)
+            raise self._permission_denied("Permission Misconfiguration !", ERR_CODES.INTERNAL_ERR)
         if not raw_key:
             raise self._permission_denied()
         instructor = self._validate_instructor(raw_key, access_type)
