@@ -34,12 +34,20 @@ schema_view = get_schema_view(
 )
 
 BASE_PATH = 'api/v1/dashboard'
+HEADLESS_PATH = 'api/v1/public'
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
+
+    # Dashboard Routes
     path(f"{BASE_PATH}/internals/", include('core.urls')),
     path(f"{BASE_PATH}/", include('instructors.urls')),
     path(f"{BASE_PATH}/apikeys/", include('apikeys.urls')),
     path(f"{BASE_PATH}/courses/", include('courses.urls')),
+
+    # Headless Routes
+
+    # Swagger + Docs
     re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
