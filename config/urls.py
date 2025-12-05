@@ -39,14 +39,16 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
 
+    # Shared
+    path(f"{BASE_PATH}/internals/", include('apps.core.urls')),
+
     # Dashboard Routes
-    path(f"{BASE_PATH}/internals/", include('core.urls')),
-    path(f"{BASE_PATH}/", include('instructors.urls')),
-    path(f"{BASE_PATH}/apikeys/", include('apikeys.urls')),
-    path(f"{BASE_PATH}/courses/", include('courses.urls')),
+    path(f"{BASE_PATH}/", include('apps.dashboard.instructors.urls')),
+    path(f"{BASE_PATH}/apikeys/", include('apps.dashboard.apikeys.urls')),
+    path(f"{BASE_PATH}/courses/", include('apps.dashboard.courses.urls')),
 
     # Headless Routes
-    path(f"{HEADLESS_PATH}/instructor/", include('headless.instructor.urls')),
+    path(f"{HEADLESS_PATH}/instructor/", include('apps.headless.instructor.urls')),
 
     # Swagger + Docs
     re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),

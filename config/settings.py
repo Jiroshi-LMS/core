@@ -48,14 +48,14 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_filters',
-    'core',
-    'instructors',
-    'audit',
-    'courses',
-    'apikeys',
-    'headless.instructor',
-    'headless.students',
-    'headless.enrollments',
+    'apps.core',
+    'apps.dashboard.instructors',
+    'apps.dashboard.audit',
+    'apps.dashboard.courses',
+    'apps.dashboard.apikeys',
+    'apps.headless.instructor',
+    'apps.headless.students',
+    'apps.headless.enrollments',
 ]
 
 MIDDLEWARE = [
