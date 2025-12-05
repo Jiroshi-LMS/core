@@ -82,8 +82,6 @@ def headless_exception_handler(exc, context):
     """
     response = exception_handler(exc, context)
 
-    logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
-
     if response is not None:
         detail = response.data.get("detail", None)
         return Response({
@@ -107,13 +105,14 @@ def headless_exception_handler(exc, context):
 
     # Not found raised manually by your domain layer
     if isinstance(exc, ObjectDoesNotExist):
+        logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
         return Response({
             "status": False,
             "results": False,
-            "message": "Resource not found due to internal error !",
+            "message": "Resource not found !",
             "data": None,
             "error_code": ERR_CODES.RESOURCE_NOT_FOUND,
-        }, status=500)
+        }, status=404)
     
     # Serializer Validation Errors
     if isinstance(exc, ValidationError):
@@ -126,6 +125,8 @@ def headless_exception_handler(exc, context):
             "data": None,
             "error_code": ERR_CODES.VALIDATION_ERR,
         }, status=status.HTTP_400_BAD_REQUEST)
+    
+    logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
 
     return Response({
         "status": False,
