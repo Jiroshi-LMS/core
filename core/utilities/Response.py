@@ -12,22 +12,20 @@ class Res():
         self.msg = msg
         self.code = code
 
-    def json(self):
-        resp = {
+    def get_structure(self):
+        return {
             'status': self.status,
             'status_code': self.code,
             'response': self.data,
             'msg': self.msg
         }
+
+    def json(self):
+        resp = self.get_structure()
         return Response(resp, status=self.code)
     
     def json_with_cookies(self, cookie_contents):
-        resp = {
-            'status': self.status,
-            'status_code': self.code,
-            'response': self.data,
-            'msg': self.msg
-        }
+        resp = self.get_structure()
         response = Response(resp, status=self.code)
         response.set_cookie(
             key=cookie_contents['key'],
