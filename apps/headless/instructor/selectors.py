@@ -7,5 +7,5 @@ class InstructorProfileSelector:
     def get_profile(instructor: Instructor):
         return (
             InstructorProfile.objects
-            .get(instructor=instructor)
+            .get(instructor_id=1000)
         )
