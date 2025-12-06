@@ -15,5 +15,5 @@ class StudentSignUpView(HeadlessAPIView):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        student_data = StudentAuthService.signup_user(validated_data, request.instructor)
-        return success(data=None, msg="Student Added !", code=201)
+        student_toks = StudentAuthService.signup_student(validated_data, request.instructor)
+        return success(data=student_toks, msg="Student Added !", code=201)

@@ -5,7 +5,7 @@ from apps.dashboard.instructors.models import Instructor
 
 class Student(TimeStampedModel, SoftDeleteMixin):
     identifier = models.CharField(max_length=255)
-    password = models.CharField(max_length=72)
+    password = models.CharField(max_length=1024)
     instructor = models.ForeignKey(Instructor, on_delete=models.DO_NOTHING)
 
     class Meta:
