@@ -49,6 +49,8 @@ urlpatterns = [
 
     # Headless Routes
     path(f"{HEADLESS_PATH}/instructor/", include('apps.headless.instructor.urls')),
+    path(f"{HEADLESS_PATH}/students/", include('apps.headless.students.urls')),
+
 
     # Swagger + Docs
     re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),
