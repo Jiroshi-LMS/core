@@ -58,11 +58,12 @@ class IsValidInstructor(permissions.BasePermission):
                     key_type=access_type,
                 )
             ).first()
+
             if not key or not bcrypt.checkpw(key_val.encode("utf-8"), key.key_hash.encode("utf-8")):
                 return None
             
             return key.instructor
-        except Exception:
+        except Exception as e:
             traceback.print_exc()
             return None
         
@@ -75,6 +76,8 @@ class IsValidInstructor(permissions.BasePermission):
             raise self._permission_denied()
         instructor = self._validate_instructor(raw_key, access_type)
         if not instructor:
-            raise self._permission_denied()
+            x = self._permission_denied()
+            print(str(x))
+            raise x
         request.instructor = instructor
         return True

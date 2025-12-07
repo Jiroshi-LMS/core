@@ -4,7 +4,7 @@ import structlog
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from rest_framework import status
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import exception_handler
@@ -84,6 +84,7 @@ def headless_exception_handler(exc, context):
     
     # Integrity errors (duplicate key, FK violation, etc)
     if isinstance(exc, IntegrityError):
+        logger.exception("IntegrityError", data={"exc": exc})
         msg = extract_integrity_error_context(str(exc))
         return Response({
             "status": False,
@@ -114,6 +115,18 @@ def headless_exception_handler(exc, context):
             "data": None,
             "error_code": ERR_CODES.VALIDATION_ERR,
         }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Auth Permission Exception
+    elif isinstance(exc, PermissionDenied):
+        res = {
+            "status": False,
+            "results": False,
+            "message": "Permission Denied",
+            "data": None,
+            "error_code": ERR_CODES.API_KEY_ERR,
+        }
+        res = response.data or res
+        return Response(res, response.status_code)
     
     # Any Known Response Category
     elif response is not None:
