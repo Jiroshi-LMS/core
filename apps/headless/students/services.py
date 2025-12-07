@@ -1,6 +1,6 @@
-from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError
+from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError, AuthError
 from django.contrib.auth.hashers import make_password, check_password
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from .selectors import Instructor, StudentSelector
 
@@ -39,4 +39,22 @@ class StudentAuthService():
 
     @staticmethod
     def refresh_student_token(refresh_tok: str, instructor):
-        pass
+        try:
+            refresh = RefreshToken(refresh_tok)
+            access_token = str(refresh.access_token)
+
+            payload = refresh.payload
+            student_id = payload["student_id"]
+            student_identifier = payload["student_identifier"]
+        except (TokenError, KeyError):
+            raise AuthError()
+        
+        # new_refresh_tok = str(refresh)  # half ass-ed refresh token rotation
+
+        return {
+            "access": access_token
+            # "refresh": new_refresh
+        }
+
+
+            

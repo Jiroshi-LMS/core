@@ -3,6 +3,12 @@ from ..constants import ERR_CODES
 
 
 
+class AuthError(HeadlessException):
+    status_code = 401
+    default_detail = "Invalid or Expired Token !"
+    error_code = ERR_CODES.INVALID_TOKEN_ERR
+
+
 class InputValidationError(HeadlessException):
     status_code = 400
     default_detail = "Invalid input !"
