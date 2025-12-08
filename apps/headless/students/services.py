@@ -35,10 +35,9 @@ class StudentAuthService():
             "access": str(refresh.access_token),
             "refresh": str(refresh)
         }
-        
 
     @staticmethod
-    def refresh_student_token(refresh_tok: str, instructor):
+    def refresh_student_token(refresh_tok: str, instructor: Instructor):
         try:
             refresh = RefreshToken(refresh_tok)
             access_token = str(refresh.access_token)
@@ -55,6 +54,3 @@ class StudentAuthService():
             "access": access_token
             # "refresh": new_refresh
         }
-
-
-            
