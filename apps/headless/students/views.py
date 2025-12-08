@@ -5,6 +5,7 @@ from apps.headless.common.permissions.common import IsValidInstructor
 from apps.headless.common.utilities import success, AuthError
 from apps.headless.common.helpers.request_helpers import get_refresh_transport_mode
 from django.conf import settings
+from rest_framework.permissions import AllowAny
 
 from .serializers import (StudentPasswordAuthRequestSerializer, StudentLoginRequestSerializer)
 from .services import StudentAuthService
@@ -89,8 +90,7 @@ class StudentRefreshTokenView(HeadlessAPIView):
     Student Refresh Token
     """
 
-    permission_classes = [IsValidInstructor]
-    access_type = KEY_TYPES.get('pk')
+    permission_classes = [AllowAny]
 
     def post(self, request):
         mode = get_refresh_transport_mode(request)
