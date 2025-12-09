@@ -2,7 +2,7 @@ from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.headless.common.constants import TokenTransportMode
 from apps.headless.common.utilities.BaseView import HeadlessAPIView
 from apps.headless.common.permissions.common import IsValidInstructor, StudentJWTAuthentication, IsAuthenticatedStudent
-from apps.headless.common.utilities import success, AuthError
+from apps.headless.common.utilities import success, AuthError, InputValidationError
 from apps.headless.common.helpers.request_helpers import get_refresh_transport_mode
 from django.conf import settings
 from rest_framework.permissions import AllowAny
@@ -46,7 +46,6 @@ class StudentSignUpView(HeadlessAPIView):
     """
     Student signup
     """
-
     permission_classes = [IsValidInstructor]
     access_type = KEY_TYPES.get('pk')
     
@@ -68,7 +67,6 @@ class StudentLoginView(HeadlessAPIView):
     """
     Student Login
     """
-
     permission_classes = [IsValidInstructor]
     access_type = KEY_TYPES.get('pk')
 
@@ -85,11 +83,26 @@ class StudentLoginView(HeadlessAPIView):
         )
     
 
+class StudentExistsLookup(HeadlessAPIView):
+    """
+    Quick lookup to check if identifier 
+    is available under a given instructor
+    """
+    permission_classes = [IsValidInstructor]
+    access_type = KEY_TYPES.get('pk')
+
+    def get(self, request):
+        identifier = request.query_params.get('identifier')
+        if not identifier:
+            raise InputValidationError("Identifier missing")
+        exists = StudentAuthService.does_exist({"identifier": identifier})
+        return success(data=exists, msg="Status fetched")
+
+
 class StudentRefreshTokenView(HeadlessAPIView):
     """
     Student Refresh Token
     """
-
     permission_classes = [AllowAny]
 
     def post(self, request):

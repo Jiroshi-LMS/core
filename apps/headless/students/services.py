@@ -8,6 +8,9 @@ from .selectors import Instructor, StudentSelector
 class StudentAuthService():
     @staticmethod
     def signup_student(student_data: dict, instructor: Instructor):
+        """
+        Student Signup Service
+        """
         student_data['hashed_password'] = make_password(student_data['password'])
         student = StudentSelector.create_student(student_data, instructor)
         refresh = RefreshToken()
@@ -22,6 +25,9 @@ class StudentAuthService():
 
     @staticmethod
     def login_student(student_data: dict, instructor: Instructor):
+        """
+        Student Login Service
+        """
         student = StudentSelector.get_by_identifier(student_data.get('identifier'), instructor)
         if not student: raise NotFoundError("Student not found !")
 
@@ -37,9 +43,24 @@ class StudentAuthService():
             "access": str(refresh.access_token),
             "refresh": str(refresh)
         }
+    
+    @staticmethod
+    def does_exist(lookups: dict):
+        """
+        Student Exists Quick Lookup. Unsure of the scope yet.
+        Limited to identifier as of now
+        """
+        student_queryset = StudentSelector.lookup({"identifier": lookups.get('identifier')})
+        if not student_queryset.first():
+            return False
+        return True
+
 
     @staticmethod
     def refresh_student_token(refresh_tok: str):
+        """
+        Student Token Refresh View 
+        """
         try:
             refresh = RefreshToken(refresh_tok)
             access_token = str(refresh.access_token)
