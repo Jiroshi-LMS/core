@@ -5,7 +5,7 @@ from apps.dashboard.apikeys.constants import KEY_SEPARATOR, KEY_TYPES
 from apps.dashboard.apikeys.models import ApiKeys
 from apps.dashboard.instructors.models import Instructor
 from apps.headless.common.constants import ERR_CODES
-from apps.headless.common.utilities import ServerError, InputValidationError
+from apps.headless.common.utilities import ServerError, InputValidationError, AuthError
 from apps.headless.students.models import Student
 from django.db.models import Q
 from django.utils import timezone
@@ -29,6 +29,11 @@ class IsValidInstructor(permissions.BasePermission):
             msg: str = "Invalid or Expired API Key !",
             error_code: str = ERR_CODES.API_KEY_ERR
     ):
+        """
+        Helper function to generate
+        permission denied errors
+        """
+
         return PermissionDenied(detail={
             "status": False,
             "results": False,
@@ -74,6 +79,9 @@ class IsValidInstructor(permissions.BasePermission):
             return None
         
     def has_permission(self, request, view):
+        """
+        API Key validation check
+        """
         access_type = getattr(view, "access_type", None)    # public/private
         raw_key = request.headers.get('x-api-key');
         if not access_type:
@@ -116,11 +124,12 @@ class StudentJWTAuthentication(BaseAuthentication):
         """
         try:
             backend = TokenBackend(
-                algorithm=settings.SIMPLE_JWT["ALGORITHM"],
+                algorithm=settings.SIMPLE_JWT.get("ALGORITHM", "HS256"),
                 signing_key=settings.SIMPLE_JWT["SIGNING_KEY"]
             )
             payload = backend.decode(token, verify=True)
-        except Exception:
+        except Exception as e:
+            traceback.print_exc()
             raise AuthenticationFailed("Invalid or expired token")
         
         student_id = payload.get("student_id")
@@ -129,19 +138,6 @@ class StudentJWTAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Malformed token")
         
         return student_id, instructor_id
-    
-    def _instructor_validations(self, request, instructor_id):
-        """
-        Validate request instructor object against 
-        student auth token payload instructor id
-        """
-        request_instructor = getattr(request, 'instructor', None)
-        request_instructor_id = getattr(request_instructor, 'id', None)
-        if not request_instructor or not request_instructor_id:
-            raise ServerError("Instructor permission misconfiguration")
-        
-        if request_instructor_id != instructor_id:
-            raise AuthenticationFailed("API key and Token Mismatch")
         
     def _get_student(self, student_id, instructor_id):
         """
@@ -162,7 +158,19 @@ class StudentJWTAuthentication(BaseAuthentication):
         """
         token = self._extract_auth_header(request)
         student_id, instructor_id = self._extract_token_payload(token)
-        self._instructor_validations(self, request, instructor_id)
         student = self._get_student(student_id, instructor_id)
         request.student = student
         return (student, None)
+    
+
+class IsAuthenticatedStudent(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Permission Check for Student auth and
+        Instructor validation on student
+        """
+        instructor = getattr(request, "instructor", None)
+        student = getattr(request, "student", None)
+        if not student or not instructor: raise AuthError("Student or Instructor payload missing")
+        if instructor.id != student.instructor_id: raise AuthError("Student-Instructor mismatch")
+        return True

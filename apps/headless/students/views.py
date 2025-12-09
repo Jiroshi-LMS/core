@@ -1,7 +1,7 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.headless.common.constants import TokenTransportMode
 from apps.headless.common.utilities.BaseView import HeadlessAPIView
-from apps.headless.common.permissions.common import IsValidInstructor, StudentJWTAuthentication
+from apps.headless.common.permissions.common import IsValidInstructor, StudentJWTAuthentication, IsAuthenticatedStudent
 from apps.headless.common.utilities import success, AuthError
 from apps.headless.common.helpers.request_helpers import get_refresh_transport_mode
 from django.conf import settings
@@ -110,8 +110,9 @@ class StudentProfileView(HeadlessAPIView):
     """
     Profile lookup for student
     """
-
-    permission_classes = [IsValidInstructor, StudentJWTAuthentication]
+    authentication_classes = [StudentJWTAuthentication]
+    permission_classes = [IsValidInstructor, IsAuthenticatedStudent]
+    access_type = KEY_TYPES.get('pk')
 
     def get(self, request):
         student = request.student
