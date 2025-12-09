@@ -1,7 +1,7 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.headless.common.constants import TokenTransportMode
 from apps.headless.common.utilities.BaseView import HeadlessAPIView
-from apps.headless.common.permissions.common import IsValidInstructor
+from apps.headless.common.permissions.common import IsValidInstructor, StudentJWTAuthentication
 from apps.headless.common.utilities import success, AuthError
 from apps.headless.common.helpers.request_helpers import get_refresh_transport_mode
 from django.conf import settings
@@ -101,6 +101,21 @@ class StudentRefreshTokenView(HeadlessAPIView):
         if not refresh_tok: 
             raise AuthError("Refresh Token required !")
         student_toks = StudentAuthService.refresh_student_token(
-            refresh_tok, request.instructor
+            refresh_tok
         )
         return success(data=student_toks, msg="Student token refreshed !")
+    
+
+class StudentProfileView(HeadlessAPIView):
+    """
+    Profile lookup for student
+    """
+
+    permission_classes = [IsValidInstructor, StudentJWTAuthentication]
+
+    def get(self, request):
+        student = request.student
+        return success(data={
+            "uuid": student.uuid,
+            "identifier": student.identifier,
+        })

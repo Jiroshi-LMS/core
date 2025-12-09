@@ -13,6 +13,7 @@ class StudentAuthService():
         refresh = RefreshToken()
         refresh['student_id']=student.id
         refresh['student_identifier']=student.identifier
+        refresh['instructor_id']=instructor.id
 
         return {
             "access": str(refresh.access_token),
@@ -30,6 +31,7 @@ class StudentAuthService():
         refresh = RefreshToken()
         refresh['student_id']=student.id
         refresh['student_identifier']=student.identifier
+        refresh['instructor_id']=instructor.id
 
         return {
             "access": str(refresh.access_token),
@@ -37,7 +39,7 @@ class StudentAuthService():
         }
 
     @staticmethod
-    def refresh_student_token(refresh_tok: str, instructor: Instructor):
+    def refresh_student_token(refresh_tok: str):
         try:
             refresh = RefreshToken(refresh_tok)
             access_token = str(refresh.access_token)
@@ -45,6 +47,7 @@ class StudentAuthService():
             payload = refresh.payload
             student_id = payload["student_id"]
             student_identifier = payload["student_identifier"]
+            instructor_id = payload["instructor_id"]
         except (TokenError, KeyError):
             raise AuthError()
         

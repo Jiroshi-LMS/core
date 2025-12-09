@@ -3,6 +3,12 @@ from ..constants import ERR_CODES
 
 
 
+class ServerError(HeadlessException):
+    status_code = 500
+    default_detail = "Internal Server Error !"
+    error_code = ERR_CODES.INTERNAL_ERR
+
+
 class AuthError(HeadlessException):
     status_code = 401
     default_detail = "Invalid or Expired Token !"
