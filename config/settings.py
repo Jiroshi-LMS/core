@@ -36,27 +36,40 @@ ALLOWED_HOSTS = [os.getenv('DJANGO_ALLOWED_HOSTS', '*')]
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+INSTALLED_MODULES = [
     "rest_framework_simplejwt.token_blacklist",
     'rest_framework',
     'corsheaders',
     'drf_yasg',
     'django_filters',
-    'apps.core',
+]
+
+COMMONS_APPS = ['apps.core',]
+
+DASHBOARD_APPS = [
     'apps.dashboard.instructors',
     'apps.dashboard.audit',
     'apps.dashboard.courses',
     'apps.dashboard.apikeys',
+]
+
+HEADLESS_APPS = [
     'apps.headless.instructor',
     'apps.headless.students',
+    'apps.headless.courses',
     'apps.headless.enrollments',
 ]
+
+INSTALLED_APPS = DJANGO_APPS + INSTALLED_MODULES + COMMONS_APPS + DASHBOARD_APPS + HEADLESS_APPS
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
