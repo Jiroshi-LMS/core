@@ -1,6 +1,11 @@
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from .Exceptions import headless_exception_handler
+
+
+#######################
+# Base Headless Views
+#######################
 
 class HeadlessAPIView(APIView):
     def handle_exception(self, exc):
@@ -25,3 +30,25 @@ class HeadlessModelViewSet(ModelViewSet):
             return response
 
         return super().handle_exception(exc)
+    
+
+class HeadlessReadOnlyViewSet(ReadOnlyModelViewSet):
+    def handle_exception(self, exc):
+        """
+        Override DRF's exception handling for ReadOnlyViewSets
+        to use the headless error response format.
+        """
+        response = headless_exception_handler(exc, {"view": self})
+
+        if response is not None:
+            return response
+
+        return super().handle_exception(exc)
+    
+
+##########################
+# Dynamic Headless Views
+##########################
+
+class DynamicAPIView(HeadlessAPIView):
+    selection_options = []
