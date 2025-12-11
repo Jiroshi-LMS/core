@@ -95,82 +95,104 @@ class IsValidInstructor(permissions.BasePermission):
             raise x
         request.instructor = instructor
         return True
+
+
+class InstructorAPIKeyAuthentication(BaseAuthentication):
+
+    def authenticate(self, request):
+        raw_key = request.headers.get("x-api-key")
+
+        if not raw_key:
+            return None  # allows endpoints that don't require instructor
+
+        try:
+            key_type, key_id, key_val = raw_key.split(KEY_SEPARATOR)
+        except ValueError:
+            raise AuthenticationFailed("Malformed API key")
+
+        access_type = getattr(request.resolver_match.func.view_class, "access_type", None)
+        if not access_type:
+            raise AuthenticationFailed("Permission misconfiguration")
+
+        if KEY_TYPES.get(key_type) != access_type:
+            raise AuthenticationFailed("Invalid API key type")
+
+        key = (
+            ApiKeys.objects
+            .select_related("instructor")
+            .filter(
+                Q(expires_at__isnull=True) | Q(expires_at__gte=timezone.now()),
+                uuid=key_id,
+                key_type=access_type,
+            )
+            .first()
+        )
+
+        if not key:
+            raise AuthenticationFailed("Invalid API key")
+
+        if not bcrypt.checkpw(
+            key_val.encode("utf-8"),
+            key.key_hash.encode("utf-8")
+        ):
+            raise AuthenticationFailed("Invalid API key")
+
+        request.instructor = key.instructor
+        return (key.instructor, None)
     
 
 class StudentJWTAuthentication(BaseAuthentication):
-    """
-    Authenticates student using JWT access token.
-    """
 
-    def _extract_auth_header(self, request):
-        """
-        Get token from auth header
-        """
+    def authenticate(self, request):
         auth_header = request.headers.get("Authorization")
+
         if not auth_header:
-            raise InputValidationError("Missing authorization token")
+            return None  # optional unless permission demands it
+
         try:
             prefix, token = auth_header.split(" ")
-            if prefix.lower() != "bearer":
-                raise InputValidationError("Invalid token prefix")
         except ValueError:
             raise AuthenticationFailed("Invalid Authorization header")
-        
-        return token
-    
-    def _extract_token_payload(self, token):
-        """
-        Extract auth token payload
-        """
+
+        if prefix.lower() != "bearer":
+            raise AuthenticationFailed("Invalid token prefix")
+
+        backend = TokenBackend(
+            algorithm=settings.SIMPLE_JWT.get("ALGORITHM", "HS256"),
+            signing_key=settings.SIMPLE_JWT["SIGNING_KEY"],
+        )
+
         try:
-            backend = TokenBackend(
-                algorithm=settings.SIMPLE_JWT.get("ALGORITHM", "HS256"),
-                signing_key=settings.SIMPLE_JWT["SIGNING_KEY"]
-            )
             payload = backend.decode(token, verify=True)
-        except Exception as e:
-            traceback.print_exc()
+        except Exception:
             raise AuthenticationFailed("Invalid or expired token")
-        
+
         student_id = payload.get("student_id")
         instructor_id = payload.get("instructor_id")
+
         if not student_id or not instructor_id:
             raise AuthenticationFailed("Malformed token")
-        
-        return student_id, instructor_id
-        
-    def _get_student(self, student_id, instructor_id):
-        """
-        Student fetching DB Call
-        """
+
+        request_instructor = getattr(request, "instructor", None)
+        if not request_instructor:
+            raise AuthenticationFailed("Instructor context missing")
+
+        # HARD TENANT BOUNDARY
+        if request_instructor.id != instructor_id:
+            raise AuthenticationFailed("Instructor-token mismatch")
+
         try:
             student = Student.objects.get(
                 id=student_id,
-                instructor_id=instructor_id
+                instructor_id=request_instructor.id
             )
-            return student
         except Student.DoesNotExist:
             raise AuthenticationFailed("Student not found")
 
-    def authenticate(self, request):
-        """
-        Main authentication function
-        """
-        token = self._extract_auth_header(request)
-        student_id, instructor_id = self._extract_token_payload(token)
-        student = self._get_student(student_id, instructor_id)
         request.student = student
         return (student, None)
     
 
 class IsAuthenticatedStudent(permissions.BasePermission):
     def has_permission(self, request, view):
-        """
-        Permission Check for Student auth and
-        Instructor validation on student
-        """
-        instructor = getattr(request, "instructor", None)
-        student = getattr(request, "student", None)
-        if not student or not instructor: raise AuthError("Student or Instructor payload missing")
-        if instructor.id != student.instructor_id: raise AuthError("Student-Instructor mismatch")
-        return True
+        return bool(getattr(request, "student", None))

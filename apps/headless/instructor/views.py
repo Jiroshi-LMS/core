@@ -1,5 +1,5 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
-from apps.headless.common.permissions.common import IsValidInstructor
+from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication
 from apps.headless.common.utilities.BaseView import HeadlessAPIView
 from apps.headless.common.utilities import (InputValidationError)
 from apps.headless.common.utilities import success
@@ -8,7 +8,7 @@ from .services import InstructorProfileServices
 
 
 class InstructorProfileView(HeadlessAPIView):
-    permission_classes = [IsValidInstructor]
+    authentication_classes = [InstructorAPIKeyAuthentication]
     access_type = KEY_TYPES.get('pk')
 
     def get(self, request):
