@@ -1,8 +1,8 @@
 from rest_framework.pagination import PageNumberPagination, CursorPagination
-from .Response import Res
+from .Response import success
 
 
-class DashboardPageNumberPaginator(PageNumberPagination):
+class HeadlessPageNumberPaginator(PageNumberPagination):
     """
     Custom page number pagination class for sending custom responses.
     """
@@ -11,17 +11,17 @@ class DashboardPageNumberPaginator(PageNumberPagination):
     max_page_size = 50
 
     def get_paginated_response(self, data, msg="Successfully Fetched"):
-        return Res(data={
+        return success(data={
             "count": self.page.paginator.count,
             "total_pages": self.page.paginator.num_pages,
             "current_page": self.page.number,
             "next": self.get_next_link(),
             "previous": self.get_previous_link(),
             "results": data
-        }, msg=msg).json()
+        }, msg=msg)
     
 
-class DashboardCursorPagination(CursorPagination):
+class HeadlessCursorPagination(CursorPagination):
     """
     Custom cursor pagination class for sending custom response
     """
@@ -31,8 +31,8 @@ class DashboardCursorPagination(CursorPagination):
     offset_cutoff = 50  # Max number of items in a page before a hard cutoff
 
     def get_paginated_response(self, data, msg="Successfully Fetched"):
-        return Res(data={
+        return success(data={
             "next": self.get_next_link(),
             "previous": self.get_previous_link(),
             "results": data
-        }, msg=msg).json()
+        }, msg=msg)
