@@ -4,7 +4,8 @@ import traceback
 from apps.core.constants import ENV, CommonErrors
 from apps.core.decorators import handle_exceptions
 from apps.core.permissions import IsAuthenticated
-from apps.core.utilities import Res, S3Utils
+from apps.core.utilities import S3Utils
+from apps.dashboard.common.utilities.Response import Res
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, status

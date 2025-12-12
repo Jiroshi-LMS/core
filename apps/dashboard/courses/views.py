@@ -2,7 +2,8 @@ import structlog
 
 from apps.core.decorators import handle_exceptions
 from apps.core.permissions import IsAuthenticated
-from apps.core.utilities import Res, CustomPaginator
+from apps.dashboard.common.utilities.Response import Res
+from apps.dashboard.common.utilities.Paginator import DashboardPageNumberPaginator
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.dashboard.instructors.permissions import IsOwner
 from rest_framework import status
@@ -33,7 +34,7 @@ resource_selector = LessonResourceSelector()
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    pagination_class = CustomPaginator
+    pagination_class = DashboardPageNumberPaginator
     permission_classes = [IsAuthenticated, IsOwner]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseFilters
@@ -138,7 +139,7 @@ class CourseLessonViewSet(ModelViewSet):
     queryset = CourseLesson.objects.all()
     permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = CourseLessonSerializer
-    pagination_class = CustomPaginator
+    pagination_class = DashboardPageNumberPaginator
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = LessonFilters
     search_fields = ['title', 'description']
@@ -251,7 +252,7 @@ class LessonResourceViewSet(ModelViewSet):
     queryset = LessonResource.objects.all()
     permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = LessonResourceSerializer
-    pagination_class = CustomPaginator
+    pagination_class = DashboardPageNumberPaginator
 
     lookup_field = 'uuid'
     lookup_value_regex = "[0-9a-f-]+"

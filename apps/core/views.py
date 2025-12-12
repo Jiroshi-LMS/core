@@ -6,8 +6,8 @@ from .permissions import IsAuthenticated
 from .constants import ENV, Keywords
 from .decorators import handle_exceptions
 from .helpers import get_presigned_object_key
-from .utilities import Res, S3Utils
-
+from .utilities import S3Utils
+from apps.dashboard.common.utilities.Response import Res
 
 
 class HealthCheckView(APIView):

@@ -1,6 +1,7 @@
 from apps.core.decorators import handle_exceptions
-from apps.core.utilities import Res, CustomPaginator
+from apps.dashboard.common.utilities.Response import Res
 from apps.core.permissions import IsAuthenticated
+from apps.dashboard.common.utilities.Paginator import DashboardPageNumberPaginator
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -14,7 +15,7 @@ from .serializers import APIKeyBaseSerializer, APIKeyListSerializer
 class APIKeysViewset(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = APIKeyBaseSerializer
-    pagination_class = CustomPaginator
+    pagination_class = DashboardPageNumberPaginator
 
     lookup_field = 'uuid'
     lookup_value_regex = "[0-9a-f-]+"

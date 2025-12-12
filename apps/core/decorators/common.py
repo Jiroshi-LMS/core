@@ -3,7 +3,7 @@ Enhanced middleware for comprehensive logging and user activity tracking.
 """
 from apps.core.constants import CommonErrors
 from apps.core.helpers import flatten_serializer_errors, extract_integrity_error_context
-from apps.core.utilities import Res
+from apps.dashboard.common.utilities.Response import Res
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import Http404

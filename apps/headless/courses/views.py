@@ -1,3 +1,4 @@
+from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet
 from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication
 from apps.dashboard.courses.models import Course
@@ -10,7 +11,7 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
     To allow open access to course list and retrival
     """
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
-    permission_classes = []
+    access_type = KEY_TYPES.get('pk')
     serializer_class = CourseCatalogueSerializer
 
     def get_queryset(self):
