@@ -21,6 +21,12 @@ class InputValidationError(HeadlessException):
     error_code = ERR_CODES.VALIDATION_ERR
 
 
+class RecordExistsError(HeadlessException):
+    status_code = 400
+    default_detail = "Record already exists !"
+    error_code = ERR_CODES.ALREADY_EXISTS_ERR
+
+
 class NotFoundError(HeadlessException):
     status_code = 404
     default_detail = "Not Found !"

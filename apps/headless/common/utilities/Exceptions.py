@@ -13,35 +13,88 @@ from ..constants import ERR_CODES
 logger = structlog.get_logger(__name__)
 
 
-def extract_integrity_error_context(msg):
+def extract_integrity_error_context(exc):
     """
-        Helper to handle integrity errors gracefully.
-        Checks the error string for error identification using
-        regex and string matching and returns appropriate error message.
+    A robust and database-agnostic parser for IntegrityError messages.
+    Converts raw DB errors into clean human-readable messages.
+    Works for Postgres, MySQL, SQLite.
     """
-    user_msg = "Data Integrity Error"
+    msg = str(exc)  # always convert to string
+    msg_lower = msg.lower()
 
-    # Detect UNIQUE constraint violations
-    if "UNIQUE constraint failed" in msg:
-        try:
-            field = msg.split(":")[-1].strip()
-            user_msg = f"{field} already exists."
-        except Exception:
-            user_msg = "Record already exists."
-    # Handle duplicate key from Postgres (different message pattern)
-    elif "duplicate entry" in msg.lower():
+    # ============================
+    # 1. UNIQUE constraint failures
+    # ============================
+
+    # SQLite / Django format:
+    # UNIQUE constraint failed: table.column
+    if "unique constraint failed" in msg_lower:
+        parts = msg.split(":")[-1].strip().split(".")
+        field = parts[-1] if parts else "Record"
+        return f"{field.replace('_', ' ').capitalize()} already exists."
+
+    # PostgreSQL:
+    # duplicate key value violates unique constraint "constraint_name"
+    # DETAIL: Key (a, b)=(1, 2) already exists.
+    if "duplicate key value violates unique constraint" in msg_lower:
         match = re.search(r"Key \(([^)]+)\)=", msg)
         if match:
-            field = match.group(1)
-            field = field.replace('_', ' ').capitalize()
-            user_msg = f"{field} already exists."
-        else:
-            user_msg = "Record already exists."
-    # Handle foreign key constraint failure
-    elif "FOREIGN KEY constraint failed" in msg or "violates foreign key constraint" in msg:
-        user_msg = "Invalid reference — related record not found."
+            fields = match.group(1).replace(" ", "")
+            # Support composite keys
+            fields = [f.replace("_", " ").capitalize() for f in fields.split(",")]
+            if len(fields) == 1:
+                return f"{fields[0]} already exists."
+            return f"Combination of {', '.join(fields)} already exists."
+        return "Record already exists."
 
-    return user_msg
+    # MySQL:
+    # Duplicate entry 'xyz' for key 'table.column'
+    if "duplicate entry" in msg_lower:
+        match = re.search(r"key '.*\.(.*?)'", msg_lower)
+        field = match.group(1) if match else "record"
+        field = field.replace("_", " ").capitalize()
+        return f"{field} already exists."
+
+    # ============================
+    # 2. FOREIGN KEY failures
+    # ============================
+
+    # SQLite / Django / MySQL / Postgres:
+    if "foreign key constraint failed" in msg_lower or \
+       "violates foreign key constraint" in msg_lower:
+        return "Invalid reference — related record does not exist."
+
+    # ============================
+    # 3. NOT NULL violations
+    # ============================
+
+    # PostgreSQL:
+    # null value in column "foo" violates not-null constraint
+    match = re.search(r'null value in column "([^"]+)"', msg_lower)
+    if match:
+        field = match.group(1).replace("_", " ").capitalize()
+        return f"{field} cannot be null."
+
+    # SQLite:
+    # NOT NULL constraint failed: table.column
+    if "not null constraint failed" in msg_lower:
+        field = msg.split(":")[-1].split(".")[-1].strip()
+        field = field.replace("_", " ").capitalize()
+        return f"{field} cannot be null."
+
+    # ============================
+    # 4. CHECK constraint violations
+    # ============================
+
+    if "check constraint" in msg_lower:
+        return "Data violates a required condition."
+
+    # ============================
+    # 5. Default fallback
+    # ============================
+
+    return "Data integrity error."
+
 
 
 def flatten_serializer_errors(detail, parent_field="") -> str:

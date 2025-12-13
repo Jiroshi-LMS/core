@@ -1,7 +1,8 @@
 from apps.dashboard.instructors.models import Instructor
 from apps.headless.courses.selectors import CourseSelector
 from apps.headless.students.models import Student
-from apps.headless.common.utilities.Errors import NotFoundError
+from apps.headless.common.utilities.Errors import NotFoundError, RecordExistsError
+from django.db import IntegrityError
 
 from .selectors import EnrollmentSelector
 
@@ -16,4 +17,7 @@ class CourseEnrollmentService:
         course = CourseSelector.get_by_uuid(course_uuid, instructor)
         if not course: raise NotFoundError("Student not found !")
 
-        return EnrollmentSelector.create(student, course)
+        try:
+            return EnrollmentSelector.create(student, course)
+        except IntegrityError:
+            raise RecordExistsError("Student already enrolled !")
