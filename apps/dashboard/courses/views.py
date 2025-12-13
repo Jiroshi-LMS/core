@@ -47,6 +47,12 @@ class CourseViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Course.objects.filter(created_by=self.request.user).order_by('-created_at', '-id')
+    
+    def get_object(self):
+        uuid = self.kwargs.get('uuid')
+        if uuid:
+            return Course.objects.get(uuid=uuid, created_by=self.request.user)
+        return super().get_object()
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):

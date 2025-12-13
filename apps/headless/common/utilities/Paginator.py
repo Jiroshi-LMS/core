@@ -41,6 +41,6 @@ class HeadlessCursorPagination(CursorPagination):
 DEFAULT_PAGINATION = HeadlessCursorPagination
 
 PAGINATION_SELECTOR = {
-    'page': HeadlessPageNumberPaginator,
-    'cusor': HeadlessCursorPagination
+    'page': HeadlessPageNumberPaginator(),
+    'cusor': HeadlessCursorPagination()
 }
