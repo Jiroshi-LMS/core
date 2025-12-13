@@ -1,11 +1,11 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
+from apps.dashboard.courses.models import Course
+from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
 from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView
 from apps.headless.common.utilities.Response import success
-from apps.headless.common.utilities.Errors import InputValidationError
-from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
-from apps.dashboard.courses.models import Course
-from django_filters.rest_framework import DjangoFilterBackend
+from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError
 from django.db.models import Exists, OuterRef, Value, BooleanField
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filterset import CourseFilters
@@ -45,9 +45,27 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
 
     def get_object(self):
         uuid = self.kwargs.get('uuid')
-        if uuid:
-            return Course.objects.get(uuid=uuid, created_by=self.request.instructor, access_status="active")
-        return super().get_object()
+        if not uuid:
+            raise InputValidationError("UUID not provided !")
+        base_queryset = Course.objects.filter(uuid=uuid, created_by=self.request.instructor, access_status="active")
+        student = getattr(self.request, 'student', None)
+        if not student:
+            base_queryset = base_queryset.annotate(
+                is_enrolled=Value(False, output_field=BooleanField())
+            )
+        else: 
+            base_queryset = base_queryset.annotate(
+                is_enrolled=Exists(
+                    Enrollments.objects.filter(
+                        student_id=student.id,
+                        course_id=OuterRef('id')
+                    )
+                )
+            )
+        try:
+            return base_queryset.get()
+        except Course.DoesNotExist:
+            raise NotFoundError("Course not found!")
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

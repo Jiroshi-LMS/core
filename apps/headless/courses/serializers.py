@@ -11,7 +11,7 @@ class CourseCatalogueSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
     description = serializers.CharField(required=True)
     thumbnail = serializers.SerializerMethodField(read_only=True)
     duration = serializers.DecimalField(max_digits=10, decimal_places=4, required=True)
-    is_enrolled = serializers.BooleanField(read_only=True)
+    is_enrolled = serializers.BooleanField(default=False, read_only=True)
 
     class Meta:
         model=Course
