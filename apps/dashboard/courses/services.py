@@ -12,7 +12,6 @@ from .selectors import (
 
 
 
-course_selector = CourseSelector()
 lesson_selector = LessonSelector()
 resource_selector = LessonResourceSelector()
 
@@ -21,7 +20,7 @@ class CourseServices:
 
     @staticmethod
     def create(validated_data: dict, instructor: Instructor) -> Course:
-        return course_selector.create(validated_data, instructor)
+        return CourseSelector.create(validated_data, instructor)
     
     @staticmethod
     def validate_lesson_count_for_toggle(course: Course, instructor: Instructor):
@@ -54,7 +53,7 @@ class CourseServices:
             if access_status_string == 'active':
                 CourseServices.validate_lesson_count_for_toggle(course, instructor)
             validated_data['access_status'] = access_status_string
-            return course_selector.update(validated_data, course)
+            return CourseSelector.update(validated_data, course)
 
     @staticmethod
     def soft_delete_course(course: Course, instructor: Instructor):
@@ -68,7 +67,7 @@ class CourseServices:
 class CourseLessonServices:
     @staticmethod
     def create(validated_data: dict, instructor: Instructor) -> CourseLesson:
-        course = course_selector.by_uuid(validated_data['course_uuid'], instructor)
+        course = CourseSelector.by_uuid(validated_data['course_uuid'], instructor)
         return lesson_selector.create(
             validated_data, instructor, course
         )
@@ -102,7 +101,7 @@ class CourseLessonServices:
             lesson.access_status = 'active'
         lesson.save()
 
-        course = course_selector.by_uuid(lesson.course.uuid, instructor)
+        course = CourseSelector.by_uuid(lesson.course.uuid, instructor)
         course_lessons_duration = lesson_selector.active_lessons(course, instructor).aggregate(
             duration=Sum('duration')
         )['duration']
@@ -115,7 +114,7 @@ class CourseLessonServices:
 
     @staticmethod
     def soft_delete_lesson(lesson: CourseLesson, instructor: Instructor):
-        course = course_selector.by_id(lesson.course_id, instructor)
+        course = CourseSelector.by_id(lesson.course_id, instructor)
         course.duration = course.duration - lesson.duration
         if course.duration <= 0:
             course.duration = 0

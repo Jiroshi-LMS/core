@@ -129,7 +129,7 @@ class InstructorAPIKeyAuthentication(BaseAuthentication):
         )
 
         if not key:
-            raise AuthenticationFailed("Invalid API key")
+            raise AuthenticationFailed("Invalid or Expired API key")
 
         if not bcrypt.checkpw(
             key_val.encode("utf-8"),

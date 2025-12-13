@@ -26,7 +26,6 @@ from .services import (
 )
 
 logger = structlog.get_logger(__name__)
-course_selector = CourseSelector()
 lesson_selector = LessonSelector()
 resource_selector = LessonResourceSelector()
 
@@ -189,7 +188,7 @@ class CourseLessonViewSet(ModelViewSet):
                 status.HTTP_400_BAD_REQUEST, False, 
                 msg="Course ID is required."
             ).json()
-        course = course_selector.by_uuid(course_uuid, request.user)
+        course = CourseSelector.by_uuid(course_uuid, request.user)
         queryset = self.filter_queryset(self.get_queryset().filter(course=course))
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)

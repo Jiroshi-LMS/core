@@ -1,10 +1,12 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
-from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet
+from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView
 from apps.headless.common.utilities.Response import success
-from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication
+from apps.headless.common.utilities.Errors import InputValidationError
+from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
 from apps.dashboard.courses.models import Course
 
 from .serializers import (CourseCatalogueSerializer)
+from .services import CourseEnrollmentService
 
 
 class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
@@ -40,3 +42,20 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
         return success(data=serializer.data, msg="Successfully fetched !")
 
 
+class CourseEnrollmentView(HeadlessAPIView):
+    """
+    API to enroll student to a course
+    """
+    authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
+    access_type = KEY_TYPES.get('pk')
+    permission_classes = [IsAuthenticatedStudent]
+
+    def post(self, request):
+        course_uuid = request.data.get("course_uuid")
+        if not course_uuid:
+            raise InputValidationError("Course UUID missing !")
+        
+        enrollment = CourseEnrollmentService.enroll_student(request.student, course_uuid, request.instructor)
+        return success(data={
+            "enrollment_id": enrollment.uuid
+        }, msg="Enrolled successfully !", code=201)

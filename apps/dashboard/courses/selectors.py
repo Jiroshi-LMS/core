@@ -3,18 +3,20 @@ from apps.dashboard.instructors.models import Instructor
 
 
 class CourseSelector:
-
-    def by_id(self, id, instructor: Instructor, instructor_check=True):
+    @staticmethod
+    def by_id(id, instructor: Instructor, instructor_check=True):
         if instructor_check:
             return Course.objects.get(id=id, created_by=instructor)
         return Course.objects.get(id=id)
-
-    def by_uuid(self, uuid, instructor: Instructor, instructor_check=True):
+    
+    @staticmethod
+    def by_uuid(uuid, instructor: Instructor, instructor_check=True):
         if instructor_check:
             return Course.objects.get(uuid=uuid, created_by=instructor)
         return Course.objects.get(uuid=uuid)
     
-    def create(self, validated_data, created_by):
+    @staticmethod    
+    def create(validated_data, created_by):
         return Course.objects.create(
             title=validated_data.get('title'),
             description=validated_data.get('description'),
@@ -22,8 +24,9 @@ class CourseSelector:
             duration=validated_data.get('duration'),
             created_by=created_by
         )
-
-    def update(self, validated_data, course):
+    
+    @staticmethod
+    def update(validated_data, course):
         for key, value in validated_data.items():
             setattr(course, key, value)
         course.save()
