@@ -7,7 +7,7 @@ class CourseCatalogueSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     thumbnail = serializers.SerializerMethodField(read_only=True)
-    duration = serializers.DecimalField(required=True)
+    duration = serializers.DecimalField(max_digits=10, decimal_places=4, required=True)
     # enrollments = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -19,12 +19,12 @@ class CourseCatalogueSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['uuid', 'created_at']
 
-    def get_thumbnail_url(self, obj):
+    def get_thumbnail(self, obj):
         thumbnail = obj.thumbnail
         if not thumbnail:
             thumbnail = DefaultObjectKeys.THUMBNAIL
         return Urls.STATIC_S3_URL + thumbnail
 
-    def get_enrollments(self, obj):
-        # TODO: Implement Enrollments Count once students are implemented
-        return 0
+    # def get_enrollments(self, obj):
+    #     # TODO: Implement Enrollments Count once students are implemented
+    #     return 0

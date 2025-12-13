@@ -4,7 +4,7 @@ import structlog
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from rest_framework import status
-from rest_framework.exceptions import APIException, PermissionDenied
+from rest_framework.exceptions import APIException, PermissionDenied, AuthenticationFailed, NotAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import exception_handler
@@ -80,74 +80,68 @@ def headless_exception_handler(exc, context):
     Clean, consistent output for ALL headless errors.
     """
     response = exception_handler(exc, context)
-
+    def default_response(msg="Internal server error", error_code=ERR_CODES.INTERNAL_ERR):
+        return {
+            "status": False,
+            "results": False,
+            "message": msg,
+            "data": None,
+            "error_code": error_code,
+        }
     
     # Integrity errors (duplicate key, FK violation, etc)
     if isinstance(exc, IntegrityError):
         logger.exception("IntegrityError", data={"exc": exc})
         msg = extract_integrity_error_context(str(exc))
-        return Response({
-            "status": False,
-            "results": False,
-            "message": msg or "Database integrity error",
-            "data": None,
-            "error_code": ERR_CODES.INTEGRITY_ERR,
-        }, status=status.HTTP_400_BAD_REQUEST)
+        msg = msg or "Database integrity error"
+        return Response(
+            default_response(msg=msg, error_code=ERR_CODES.INTEGRITY_ERR), 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     # Not found raised manually by your domain layer
     elif isinstance(exc, ObjectDoesNotExist):
         logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
-        return Response({
-            "status": False,
-            "results": False,
-            "message": "Resource not found !",
-            "data": None,
-            "error_code": ERR_CODES.RESOURCE_NOT_FOUND,
-        }, status=404)
+        return Response(
+            default_response(msg="Resource not found !", error_code=ERR_CODES.RESOURCE_NOT_FOUND), 
+            status=status.HTTP_404_NOT_FOUND
+        )
     
     # Serializer Validation Errors
     elif isinstance(exc, ValidationError):
         msg = flatten_serializer_errors(exc.detail)
-        return Response({
-            "status": False,
-            "results": False,
-            "message": msg or "Validation Failed",
-            "data": None,
-            "error_code": ERR_CODES.VALIDATION_ERR,
-        }, status=status.HTTP_400_BAD_REQUEST)
+        msg = msg or "Validation Failed"
+        return Response(
+            default_response(msg=msg, error_code=ERR_CODES.VALIDATION_ERR),
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
-    # Auth Permission Exception
+    # Authorization Permission Exception
     elif isinstance(exc, PermissionDenied):
-        res = {
-            "status": False,
-            "results": False,
-            "message": "Permission Denied",
-            "data": None,
-            "error_code": ERR_CODES.API_KEY_ERR,
-        }
+        res = default_response(msg="Permission Denied", error_code=ERR_CODES.API_KEY_ERR)
         res = response.data or res
         return Response(res, response.status_code)
+    
+    elif isinstance(exc, (AuthenticationFailed, NotAuthenticated)):
+        msg = response.data.get('detail')
+        msg = msg or "Authentication failed"
+        return Response(
+            default_response(msg=msg, error_code=ERR_CODES.INVALID_TOKEN_ERR), 
+            status=response.status_code
+        )
     
     # Any Known Response Category
     elif response is not None:
         detail = response.data.get("detail", None)
-        return Response({
-            "status": False,
-            "results": False,
-            "message": detail or "Error",
-            "data": None,
-            "error_code": getattr(exc, "error_code", None),
-        }, status=response.status_code)
+        msg = detail or "Error"
+        return Response(
+            default_response(msg=msg, error_code=getattr(exc, "error_code", ERR_CODES.INTERNAL_ERR)),
+            status=response.status_code
+        )
     
     logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
 
-    return Response({
-        "status": False,
-        "results": False,
-        "message": "Internal server error",
-        "data": None,
-        "error_code": ERR_CODES.INTERNAL_ERR,
-    }, status=500)
+    return Response(default_response(), status=500)
 
 
 class HeadlessException(APIException):

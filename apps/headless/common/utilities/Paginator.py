@@ -36,3 +36,11 @@ class HeadlessCursorPagination(CursorPagination):
             "previous": self.get_previous_link(),
             "results": data
         }, msg=msg)
+
+
+DEFAULT_PAGINATION = HeadlessCursorPagination
+
+PAGINATION_SELECTOR = {
+    'page': HeadlessPageNumberPaginator,
+    'cusor': HeadlessCursorPagination
+}

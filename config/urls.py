@@ -50,6 +50,7 @@ urlpatterns = [
     # Headless Routes
     path(f"{HEADLESS_PATH}/instructor/", include('apps.headless.instructor.urls')),
     path(f"{HEADLESS_PATH}/students/", include('apps.headless.students.urls')),
+    path(f"{HEADLESS_PATH}/courses/", include('apps.headless.courses.urls')),
 
 
     # Swagger + Docs

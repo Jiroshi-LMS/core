@@ -101,16 +101,16 @@ class InstructorAPIKeyAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
         raw_key = request.headers.get("x-api-key")
-
         if not raw_key:
-            return None  # allows endpoints that don't require instructor
+            raise AuthenticationFailed("API key missing")
 
         try:
             key_type, key_id, key_val = raw_key.split(KEY_SEPARATOR)
         except ValueError:
             raise AuthenticationFailed("Malformed API key")
 
-        access_type = getattr(request.resolver_match.func.view_class, "access_type", None)
+        view = request.parser_context.get("view")
+        access_type = getattr(view, "access_type", None)
         if not access_type:
             raise AuthenticationFailed("Permission misconfiguration")
 
@@ -138,17 +138,15 @@ class InstructorAPIKeyAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Invalid API key")
 
         request.instructor = key.instructor
-        return (key.instructor, None)
+        return None
     
 
 class StudentJWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
         auth_header = request.headers.get("Authorization")
-
         if not auth_header:
             return None  # optional unless permission demands it
-
         try:
             prefix, token = auth_header.split(" ")
         except ValueError:
@@ -195,4 +193,12 @@ class StudentJWTAuthentication(BaseAuthentication):
 
 class IsAuthenticatedStudent(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(getattr(request, "student", None))
+        if not bool(getattr(request, "student", None)):
+            raise PermissionDenied(detail={
+                "status": False,
+                "results": False,
+                "message": "Student not authenticated",
+                "data": None,
+                "error_code": ERR_CODES.INVALID_TOKEN_ERR
+            })
+        return True
