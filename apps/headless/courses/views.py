@@ -5,9 +5,11 @@ from apps.headless.common.utilities.Errors import InputValidationError
 from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
 from apps.dashboard.courses.models import Course
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Exists, OuterRef, Value, BooleanField
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filterset import CourseFilters
+from .models import Enrollments
 from .serializers import (CourseCatalogueSerializer)
 from .services import CourseEnrollmentService
 
@@ -26,8 +28,21 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return Course.objects.filter(created_by=self.request.instructor, access_status="active")
-    
+        base_queryset = Course.objects.filter(created_by=self.request.instructor, access_status="active")
+        student = getattr(self.request, 'student', None)
+        if not student:
+            return base_queryset.annotate(
+                is_enrolled=Value(False, output_field=BooleanField())
+            )
+        return base_queryset.annotate(
+            is_enrolled=Exists(
+                Enrollments.objects.filter(
+                    student_id=student.id,
+                    course_id=OuterRef('id')
+                )
+            )
+        )
+
     def get_object(self):
         uuid = self.kwargs.get('uuid')
         if uuid:
@@ -35,7 +50,7 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
         return super().get_object()
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset().order_by('-created_at'))
+        queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page:
             serializer = self.get_serializer(page, many=True)

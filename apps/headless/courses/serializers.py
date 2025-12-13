@@ -5,17 +5,19 @@ from apps.headless.common.utilities.DynamicSerializerSelector import DynamicFiel
 
 
 class CourseCatalogueSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    required_fields = ['is_enrolled']
+
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     thumbnail = serializers.SerializerMethodField(read_only=True)
     duration = serializers.DecimalField(max_digits=10, decimal_places=4, required=True)
-    # enrollments = serializers.SerializerMethodField(read_only=True)
+    is_enrolled = serializers.BooleanField(read_only=True)
 
     class Meta:
         model=Course
         fields = [
             'uuid', 'created_at', 'title', 'description',
-            'thumbnail', 'duration', # 'enrollments',
+            'thumbnail', 'duration', 'is_enrolled'
         ]
 
     def get_thumbnail(self, obj):
