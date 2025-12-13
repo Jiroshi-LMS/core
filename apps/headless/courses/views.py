@@ -4,7 +4,10 @@ from apps.headless.common.utilities.Response import success
 from apps.headless.common.utilities.Errors import InputValidationError
 from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
 from apps.dashboard.courses.models import Course
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
+from .filterset import CourseFilters
 from .serializers import (CourseCatalogueSerializer)
 from .services import CourseEnrollmentService
 
@@ -16,6 +19,11 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
     serializer_class = CourseCatalogueSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CourseFilters
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'duration']
+    ordering = ['-created_at']
 
     def get_queryset(self):
         return Course.objects.filter(created_by=self.request.instructor, access_status="active")
