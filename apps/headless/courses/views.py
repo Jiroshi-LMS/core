@@ -1,15 +1,15 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.dashboard.courses.models import Course
 from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
-from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView
+from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView, HeadlessModelViewSet
 from apps.headless.common.utilities.Response import success
 from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .filterset import CourseFilters
-from .serializers import (CourseCatalogueSerializer)
-from .services import CourseServices, CourseEnrollmentService
+from .filterset import CourseFilters, CourseLessonFilters
+from .serializers import (CourseCatalogueSerializer, CourseLessonPublicListSerializer)
+from .services import CourseServices, CourseEnrollmentService, CourseLessonServices
 
 
 class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
@@ -24,6 +24,9 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'duration']
     ordering = ['-created_at']
+
+    lookup_field = 'uuid'
+    lookup_value_regex = "[0-9a-f-]+"
 
     def get_queryset(self):
         base_queryset = CourseServices.get_course_catalogue_queryset(self.request.instructor)
@@ -56,6 +59,38 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
         course = self.get_object()
         serializer = self.get_serializer(instance=course)
         return success(data=serializer.data, msg="Successfully fetched !")
+    
+
+class CourseLessonViewset(HeadlessModelViewSet):
+    """
+    Course Lessons View Endpoints
+    """
+    authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
+    access_type = KEY_TYPES.get('pk')
+    serializer_class = CourseLessonPublicListSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CourseLessonFilters
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'duration']
+    ordering = ['-created_at']
+
+    lookup_field = 'uuid'
+    lookup_value_regex = "[0-9a-f-]+"
+
+    def get_queryset(self):
+        course_uuid = self.kwargs.get('course_uuid')
+        return CourseLessonServices.get_course_lesson_queryset(course_uuid, self.request.instructor)
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page:
+            serializer = self.get_serializer(page, many=True)
+            paginator = self.get_paginator()
+            return paginator.get_paginated_response(data=serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return success(data=serializer.data, msg="Successfully fetched !")
+
 
 
 class CourseEnrollmentView(HeadlessAPIView):

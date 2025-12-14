@@ -22,3 +22,20 @@
     - Create a scheduled task to mark all as expired and delete all the unused objects
 
 - Maintain a dedicated table for keeping track of each item uploaded by each instructor ( This is different from keeping track of each s3 open as mentioned above. The purpose here is to keep track of instructor's storage usage )
+
+
+# Headless APIs:
+
+- [x] Student Signup Auth
+- [x] Student Login Auth
+- [x] Student Refresh Token
+- [x] Student Profile
+- [x] Student Identifier Exists Lookup
+- [x] List Course
+- [x] Retrieve Course
+- [x] Enroll into Course
+- [] List Course Lessons
+- [] Retrive Course Lesson Details
+- [] Play lesson
+- [] Fetch Lesson Resources
+- [] Student Enrolled Courses List

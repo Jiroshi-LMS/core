@@ -1,6 +1,6 @@
 from apps.dashboard.instructors.models import Instructor
 from apps.dashboard.courses.models import Course
-from apps.headless.courses.selectors import CourseSelector
+from apps.headless.courses.selectors import CourseSelector, CourseLessonSelector
 from apps.headless.students.models import Student
 from apps.headless.common.utilities.Errors import NotFoundError, RecordExistsError
 from django.db import IntegrityError
@@ -23,6 +23,15 @@ class CourseServices:
     @staticmethod
     def enrich_with_enrollment_status(base_course_queryset: QuerySet[Course], student: Student):
         return CourseSelector.annotate_with_enrollment_status(base_course_queryset, student)
+    
+
+class CourseLessonServices:
+    """
+    Service Layer for course lessons
+    """
+    @staticmethod
+    def get_course_lesson_queryset(course_uuid: str, instructor: Instructor):
+        return CourseLessonSelector.get_all(course_uuid, instructor)
 
 
 class CourseEnrollmentService:
