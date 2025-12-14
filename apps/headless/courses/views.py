@@ -4,14 +4,12 @@ from apps.headless.common.permissions.common import InstructorAPIKeyAuthenticati
 from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView
 from apps.headless.common.utilities.Response import success
 from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError
-from django.db.models import Exists, OuterRef, Value, BooleanField
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filterset import CourseFilters
-from .models import Enrollments
 from .serializers import (CourseCatalogueSerializer)
-from .services import CourseEnrollmentService
+from .services import CourseServices, CourseEnrollmentService
 
 
 class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
@@ -28,40 +26,17 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        base_queryset = Course.objects.filter(created_by=self.request.instructor, access_status="active")
+        base_queryset = CourseServices.get_course_catalogue_queryset(self.request.instructor)
         student = getattr(self.request, 'student', None)
-        if not student:
-            return base_queryset.annotate(
-                is_enrolled=Value(False, output_field=BooleanField())
-            )
-        return base_queryset.annotate(
-            is_enrolled=Exists(
-                Enrollments.objects.filter(
-                    student_id=student.id,
-                    course_id=OuterRef('id')
-                )
-            )
-        )
+        return CourseServices.enrich_with_enrollment_status(base_queryset, student)
 
     def get_object(self):
         uuid = self.kwargs.get('uuid')
         if not uuid:
             raise InputValidationError("UUID not provided !")
-        base_queryset = Course.objects.filter(uuid=uuid, created_by=self.request.instructor, access_status="active")
+        base_queryset = CourseServices.get_course_catalogue_queryset(self.request.instructor, uuid)
         student = getattr(self.request, 'student', None)
-        if not student:
-            base_queryset = base_queryset.annotate(
-                is_enrolled=Value(False, output_field=BooleanField())
-            )
-        else: 
-            base_queryset = base_queryset.annotate(
-                is_enrolled=Exists(
-                    Enrollments.objects.filter(
-                        student_id=student.id,
-                        course_id=OuterRef('id')
-                    )
-                )
-            )
+        base_queryset = CourseServices.enrich_with_enrollment_status(base_queryset, student)
         try:
             return base_queryset.get()
         except Course.DoesNotExist:
