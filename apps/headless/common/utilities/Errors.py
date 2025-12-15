@@ -15,6 +15,12 @@ class AuthError(HeadlessException):
     error_code = ERR_CODES.INVALID_TOKEN_ERR
 
 
+class ForbiddenError(HeadlessException):
+    status_code = 403
+    default_detail = "Access denied to this resource !"
+    error_code = ERR_CODES.ACCESS_DENIED_ERR
+
+
 class InputValidationError(HeadlessException):
     status_code = 400
     default_detail = "Invalid input !"

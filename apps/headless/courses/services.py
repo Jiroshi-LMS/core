@@ -1,12 +1,13 @@
 from apps.dashboard.instructors.models import Instructor
 from apps.dashboard.courses.models import Course, CourseLesson
-from apps.headless.courses.selectors import CourseSelector, CourseLessonSelector
+from apps.core.utilities import S3Utils
+from apps.core.constants import Units
 from apps.headless.students.models import Student
-from apps.headless.common.utilities.Errors import NotFoundError, RecordExistsError
+from apps.headless.common.utilities.Errors import NotFoundError, RecordExistsError, ForbiddenError
 from django.db import IntegrityError
 from django.db.models.query import QuerySet
 
-from .selectors import EnrollmentSelector
+from .selectors import EnrollmentSelector, CourseSelector, CourseLessonSelector, LessonResourceSelector
 
 
 
@@ -38,6 +39,38 @@ class CourseLessonServices:
     @staticmethod
     def enrich_with_enrollment_status(base_lesson_queryset: QuerySet[CourseLesson], student: Student):
         return CourseLessonSelector.annotate_with_enrollment_status(base_lesson_queryset, student)
+    
+
+class LessonResourceServices:
+    @staticmethod
+    def get_lesson_resources(lesson_uuid: str, course_uuid: str, student: Student, instructor: Instructor):
+        """
+        Validates student's access to course, then fetches lesson resources
+        """
+        try:
+            base_queryset = CourseLessonServices.get_course_lesson_queryset(course_uuid, instructor, lesson_uuid)
+            base_queryset = CourseLessonServices.enrich_with_enrollment_status(base_queryset, student)
+            lesson = base_queryset.get()
+            if not lesson.is_enrolled:
+                raise ForbiddenError("Access Denied to the resources")
+            file_resources = LessonResourceSelector.get_resources_by_lesson(lesson, instructor)
+            return {
+                'notes': lesson.notes,
+                'related_links': lesson.related_links,
+                'file_resources': [
+                    {
+                        'uuid': file_resource.uuid,
+                        'title': file_resource.title,
+                        'file_name': file_resource.file_name,
+                        'file_size': file_resource.file_size,
+                        'file_type': file_resource.file_type,
+                        'file_key': S3Utils.get_signed_url(file_resource.file_key, expiration=Units.HOUR * 3),
+                    }
+                    for file_resource in file_resources
+                ],
+            }
+        except CourseLesson.DoesNotExist:
+            raise NotFoundError("Lesson not found!")
 
 
 class CourseEnrollmentService:

@@ -1,5 +1,5 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
-from apps.dashboard.courses.models import Course
+from apps.dashboard.courses.models import Course, CourseLesson
 from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
 from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView, HeadlessModelViewSet
 from apps.headless.common.utilities.Response import success
@@ -9,7 +9,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filterset import CourseFilters, CourseLessonFilters
 from .serializers import (CourseCatalogueSerializer, CourseLessonPublicViewSerializer, CourseLessonEnrolledViewSerializer)
-from .services import CourseServices, CourseEnrollmentService, CourseLessonServices
+from .services import CourseServices, CourseEnrollmentService, CourseLessonServices, LessonResourceServices
 
 
 class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
@@ -91,7 +91,7 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
         base_queryset = CourseLessonServices.enrich_with_enrollment_status(base_queryset, student)
         try:
             return base_queryset.get()
-        except Course.DoesNotExist:
+        except CourseLesson.DoesNotExist:
             raise NotFoundError("Lesson not found!")
     
     def list(self, request, *args, **kwargs):
@@ -109,6 +109,26 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
         serializer = CourseLessonEnrolledViewSerializer(instance=lesson)
         return success(data=serializer.data, msg="Successfully fetched !")
 
+
+class LessonResourcesView(HeadlessAPIView):
+    """
+    API to fetch lesson resources
+    """
+    authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
+    access_type = KEY_TYPES.get('pk')
+    permission_classes = [IsAuthenticatedStudent]
+
+    def get(self, request, course_uuid, lesson_uuid):
+        """
+            List all lesson resources (files and text). 
+        """
+        list_data = LessonResourceServices.get_lesson_resources(
+            lesson_uuid, course_uuid, request.student, request.instructor,
+        )
+        return success(
+            data=list_data,
+            msg="Resources Fetched Successfully"
+        )
 
 
 class CourseEnrollmentView(HeadlessAPIView):

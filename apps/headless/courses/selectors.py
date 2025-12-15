@@ -1,5 +1,5 @@
 from apps.dashboard.instructors.models import Instructor
-from apps.dashboard.courses.models import Course, CourseLesson
+from apps.dashboard.courses.models import Course, CourseLesson, LessonResource
 from apps.headless.students.models import Student
 from apps.headless.courses.models import Enrollments
 from django.db.models import Exists, OuterRef, Value, BooleanField
@@ -81,6 +81,14 @@ class CourseLessonSelector:
             )
         )
 
+
+class LessonResourceSelector:
+    """
+    Repo for lesson resource
+    """
+    @staticmethod
+    def get_resources_by_lesson(lesson: CourseLesson, instructor: Instructor):
+        return LessonResource.objects.filter(lesson=lesson, created_by=instructor)
         
 
 class EnrollmentSelector:
