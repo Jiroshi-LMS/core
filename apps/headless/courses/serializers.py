@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.core.constants import DefaultObjectKeys, Urls
+from apps.core.utilities import S3Utils
 from apps.dashboard.courses.models import Course, CourseLesson
 from apps.headless.common.utilities.DynamicSerializerSelector import DynamicFieldsMixin
 
@@ -16,8 +17,9 @@ class CourseCatalogueSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
     class Meta:
         model=Course
         fields = [
-            'uuid', 'created_at', 'title', 'description',
-            'thumbnail', 'duration', 'is_enrolled'
+            'uuid', 'title', 'description',
+            'thumbnail', 'duration', 'created_at', 
+            'is_enrolled'
         ]
 
     def get_thumbnail(self, obj):
@@ -27,15 +29,33 @@ class CourseCatalogueSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
         return Urls.STATIC_S3_URL + thumbnail
 
 
-class CourseLessonPublicListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class CourseLessonPublicViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
     duration = serializers.DecimalField(default=0, max_digits=10, decimal_places=4, required=False)
-    media_size = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = CourseLesson
         fields = [
             'uuid', 'title', 'description', 
-            'duration', 'media_size', 'created_at'
+            'duration', 'created_at'
         ]
+
+class CourseLessonEnrolledViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    description = serializers.CharField(required=False, default="")
+    duration = serializers.DecimalField(default=0, max_digits=10, decimal_places=4, required=False)
+    video_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CourseLesson
+        fields = [
+            'uuid', 'title', 'description', 
+            'duration', 'video_url', 'created_at'
+        ]
+
+    def get_video_url(self, obj):
+        video_key = obj.media_key
+        if not video_key or not obj.is_enrolled:
+            return None
+        return S3Utils.get_signed_url(object_key=video_key, expiration=3600)

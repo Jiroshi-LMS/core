@@ -1,5 +1,5 @@
 from apps.dashboard.instructors.models import Instructor
-from apps.dashboard.courses.models import Course
+from apps.dashboard.courses.models import Course, CourseLesson
 from apps.headless.courses.selectors import CourseSelector, CourseLessonSelector
 from apps.headless.students.models import Student
 from apps.headless.common.utilities.Errors import NotFoundError, RecordExistsError
@@ -30,8 +30,14 @@ class CourseLessonServices:
     Service Layer for course lessons
     """
     @staticmethod
-    def get_course_lesson_queryset(course_uuid: str, instructor: Instructor):
+    def get_course_lesson_queryset(course_uuid: str, instructor: Instructor, lesson_uuid: str | None = None):
+        if lesson_uuid:
+            return CourseLessonSelector.get_lesson_uuid_filtered(lesson_uuid, course_uuid, instructor)
         return CourseLessonSelector.get_all(course_uuid, instructor)
+    
+    @staticmethod
+    def enrich_with_enrollment_status(base_lesson_queryset: QuerySet[CourseLesson], student: Student):
+        return CourseLessonSelector.annotate_with_enrollment_status(base_lesson_queryset, student)
 
 
 class CourseEnrollmentService:

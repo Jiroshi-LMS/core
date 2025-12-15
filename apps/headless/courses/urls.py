@@ -10,7 +10,7 @@ router.register(r'<str:course_uuid>/lessons', views.CourseLessonViewset, basenam
 
 urlpatterns = [
     path('<uuid:course_uuid>/lessons/', views.CourseLessonViewset.as_view({'get': 'list'})),
-    # path('<uuid:course_uuid>/lessons/<uuid:lesson_uuid>/', views.CourseLessonViewset.as_view({'get': 'retrieve'})),
+    path('<uuid:course_uuid>/lessons/<uuid:lesson_uuid>/', views.CourseLessonViewset.as_view({'get': 'retrieve'})),
 
     path('enroll/', views.CourseEnrollmentView.as_view(), name="enroll-to-course")
 ]

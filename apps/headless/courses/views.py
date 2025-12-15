@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .filterset import CourseFilters, CourseLessonFilters
-from .serializers import (CourseCatalogueSerializer, CourseLessonPublicListSerializer)
+from .serializers import (CourseCatalogueSerializer, CourseLessonPublicViewSerializer, CourseLessonEnrolledViewSerializer)
 from .services import CourseServices, CourseEnrollmentService, CourseLessonServices
 
 
@@ -61,13 +61,13 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
         return success(data=serializer.data, msg="Successfully fetched !")
     
 
-class CourseLessonViewset(HeadlessModelViewSet):
+class CourseLessonViewset(HeadlessReadOnlyViewSet):
     """
     Course Lessons View Endpoints
     """
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
-    serializer_class = CourseLessonPublicListSerializer
+    serializer_class = CourseLessonPublicViewSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseLessonFilters
     search_fields = ['title', 'description']
@@ -81,6 +81,19 @@ class CourseLessonViewset(HeadlessModelViewSet):
         course_uuid = self.kwargs.get('course_uuid')
         return CourseLessonServices.get_course_lesson_queryset(course_uuid, self.request.instructor)
     
+    def get_object(self):
+        course_uuid = self.kwargs.get('course_uuid')
+        lesson_uuid = self.kwargs.get('lesson_uuid')
+        student = getattr(self.request, 'student', None)
+        base_queryset = CourseLessonServices.get_course_lesson_queryset(
+            course_uuid, self.request.instructor, lesson_uuid
+        )
+        base_queryset = CourseLessonServices.enrich_with_enrollment_status(base_queryset, student)
+        try:
+            return base_queryset.get()
+        except Course.DoesNotExist:
+            raise NotFoundError("Lesson not found!")
+    
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -89,6 +102,11 @@ class CourseLessonViewset(HeadlessModelViewSet):
             paginator = self.get_paginator()
             return paginator.get_paginated_response(data=serializer.data)
         serializer = self.get_serializer(queryset, many=True)
+        return success(data=serializer.data, msg="Successfully fetched !")
+    
+    def retrieve(self, request, *args, **kwargs):
+        lesson = self.get_object()
+        serializer = CourseLessonEnrolledViewSerializer(instance=lesson)
         return success(data=serializer.data, msg="Successfully fetched !")
 
 

@@ -26,6 +26,7 @@
 
 # Headless APIs:
 
+- [x] Instructor Profile
 - [x] Student Signup Auth
 - [x] Student Login Auth
 - [x] Student Refresh Token
@@ -34,8 +35,8 @@
 - [x] List Course
 - [x] Retrieve Course
 - [x] Enroll into Course
-- [] List Course Lessons
-- [] Retrive Course Lesson Details
-- [] Play lesson
+- [x] List Course Lessons
+- [x] Retrive Course Lesson Details
 - [] Fetch Lesson Resources
 - [] Student Enrolled Courses List
+- [] Student update details

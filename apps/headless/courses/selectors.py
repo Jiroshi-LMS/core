@@ -56,6 +56,31 @@ class CourseLessonSelector:
             created_by=instructor,
             access_status="active"
         )
+    
+    @staticmethod
+    def get_lesson_uuid_filtered(lesson_uuid: str, course_uuid: str, instructor: Instructor):
+        return CourseLesson.objects.select_related('course').filter(
+            uuid=lesson_uuid,
+            course__uuid=course_uuid,
+            created_by=instructor,
+            access_status="active"
+        )
+    
+    @staticmethod
+    def annotate_with_enrollment_status(base_queryset: QuerySet[CourseLesson], student: Student):
+        if not student:
+            return base_queryset.annotate(
+                is_enrolled=Value(False, output_field=BooleanField())
+            )
+        return base_queryset.annotate(
+            is_enrolled=Exists(
+                Enrollments.objects.filter(
+                    student=student.id,
+                    course_id=OuterRef('course_id')
+                )
+            )
+        )
+
         
 
 class EnrollmentSelector:
