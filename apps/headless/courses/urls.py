@@ -16,7 +16,8 @@ urlpatterns = [
     path('<uuid:course_uuid>/lessons/<uuid:lesson_uuid>/resources/', views.LessonResourcesView.as_view(), name="lesson-resources"),
 
     # Course Enrollment
-    path('enroll/', views.CourseEnrollmentView.as_view(), name="enroll-to-course")
+    path('enroll/', views.CourseEnrollmentView.as_view(), name="enroll-to-course"),
+    path('enrolled/', views.StudentEnrolledCoursesView.as_view(), name='enrolled-course-list')
 ]
 
 urlpatterns += router.urls

@@ -5,8 +5,8 @@ from apps.dashboard.courses.models import Course
 
 
 class Enrollments(TimeStampedModel, SoftDeleteMixin):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="student")
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="enrollments")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
 
     class Meta:
         managed=True

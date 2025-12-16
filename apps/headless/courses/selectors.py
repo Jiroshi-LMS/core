@@ -101,3 +101,11 @@ class EnrollmentSelector:
             student=student,
             course=course
         )
+    
+    @staticmethod
+    def get_enrolled_courses(student: Student, instructor: Instructor):
+        return Enrollments.objects.select_related('course').filter(
+            student=student, 
+            course__created_by=instructor, 
+            course__access_status='active'
+        )

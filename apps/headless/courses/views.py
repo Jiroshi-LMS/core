@@ -1,15 +1,21 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.dashboard.courses.models import Course, CourseLesson
-from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication, StudentJWTAuthentication, IsAuthenticatedStudent
-from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView, HeadlessModelViewSet
+from apps.headless.common.permissions.common import (InstructorAPIKeyAuthentication, StudentJWTAuthentication, 
+                                                     IsAuthenticatedStudent)
+from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView, HeadlessGenericView
 from apps.headless.common.utilities.Response import success
 from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.mixins import (
+    ListModelMixin
+)
 
-from .filterset import CourseFilters, CourseLessonFilters
-from .serializers import (CourseCatalogueSerializer, CourseLessonPublicViewSerializer, CourseLessonEnrolledViewSerializer)
-from .services import CourseServices, CourseEnrollmentService, CourseLessonServices, LessonResourceServices
+from .filterset import CourseFilters, CourseLessonFilters, EnrolledCourseFilters
+from .serializers import (CourseCatalogueSerializer, CourseLessonPublicViewSerializer, 
+                          CourseLessonEnrolledViewSerializer, EnrolledCoursesListSerializer)
+from .services import (CourseServices, CourseEnrollmentService, 
+                       CourseLessonServices, LessonResourceServices,)
 
 
 class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
@@ -148,3 +154,38 @@ class CourseEnrollmentView(HeadlessAPIView):
         return success(data={
             "enrollment_id": enrollment.uuid
         }, msg="Enrolled successfully !", code=201)
+    
+
+class StudentEnrolledCoursesView(ListModelMixin, HeadlessGenericView):
+    """
+    API for listing all the courses enrolled by student
+    """
+    authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
+    access_type = KEY_TYPES.get('pk')
+    permission_classes = [IsAuthenticatedStudent]
+    serializer_class = EnrolledCoursesListSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = EnrolledCourseFilters
+    search_fields = ['course__title', 'course__description']
+    ordering_fields = {
+        'enrolled_at': 'created_at',
+        'created_at': 'course__created_at',
+        'duration': 'course__duration',
+    }
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return CourseEnrollmentService.get_enrolled_courses_list(self.request.student, self.request.instructor)
+
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page:
+            serializer = self.get_serializer(page, many=True)
+            paginator = self.get_paginator()
+            return paginator.get_paginated_response(data=serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return success(data=serializer.data, msg="Successfully fetched !")
+        
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)

@@ -61,10 +61,9 @@ class LessonResourceServices:
                     {
                         'uuid': file_resource.uuid,
                         'title': file_resource.title,
-                        'file_name': file_resource.file_name,
                         'file_size': file_resource.file_size,
                         'file_type': file_resource.file_type,
-                        'file_key': S3Utils.get_signed_url(file_resource.file_key, expiration=Units.HOUR * 3),
+                        'file_url': S3Utils.get_signed_url(file_resource.file_key, expiration=Units.HOUR * 3),
                     }
                     for file_resource in file_resources
                 ],
@@ -86,3 +85,7 @@ class CourseEnrollmentService:
             return EnrollmentSelector.create(student, course)
         except IntegrityError:
             raise RecordExistsError("Student already enrolled !")
+
+    @staticmethod
+    def get_enrolled_courses_list(student: Student, instructor: Instructor):
+        return EnrollmentSelector.get_enrolled_courses(student, instructor)

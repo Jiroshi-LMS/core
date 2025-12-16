@@ -4,6 +4,8 @@ from apps.core.utilities import S3Utils
 from apps.dashboard.courses.models import Course, CourseLesson
 from apps.headless.common.utilities.DynamicSerializerSelector import DynamicFieldsMixin
 
+from .models import Enrollments
+
 
 class CourseCatalogueSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     required_fields = ['is_enrolled']
@@ -41,6 +43,7 @@ class CourseLessonPublicViewSerializer(DynamicFieldsMixin, serializers.ModelSeri
             'duration', 'created_at'
         ]
 
+
 class CourseLessonEnrolledViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False, default="")
@@ -59,3 +62,27 @@ class CourseLessonEnrolledViewSerializer(DynamicFieldsMixin, serializers.ModelSe
         if not video_key or not obj.is_enrolled:
             return None
         return S3Utils.get_signed_url(object_key=video_key, expiration=3600)
+    
+
+class EnrolledCoursesListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    uuid = serializers.UUIDField(source='course.uuid')
+    title = serializers.CharField(source='course.title')
+    description = serializers.CharField(source='course.description', required=True)
+    thumbnail = serializers.SerializerMethodField(read_only=True)
+    duration = serializers.DecimalField(source='course.duration', max_digits=10, decimal_places=4, required=True)
+    created_at = serializers.DateTimeField(source='course.created_at')
+    enrolled_at = serializers.DateTimeField(source='created_at')
+    
+    class Meta:
+        model = Enrollments
+        fields = [
+            'uuid', 'title', 'description',
+            'thumbnail', 'duration', 'created_at', 
+            'enrolled_at'
+        ]
+
+    def get_thumbnail(self, obj):
+        thumbnail = obj.course.thumbnail
+        if not thumbnail:
+            thumbnail = DefaultObjectKeys.THUMBNAIL
+        return Urls.STATIC_S3_URL + thumbnail
