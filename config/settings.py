@@ -65,8 +65,7 @@ DASHBOARD_APPS = [
 HEADLESS_APPS = [
     'apps.headless.instructor',
     'apps.headless.students',
-    'apps.headless.courses',
-    'apps.headless.enrollments',
+    'apps.headless.courses'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + INSTALLED_MODULES + COMMONS_APPS + DASHBOARD_APPS + HEADLESS_APPS

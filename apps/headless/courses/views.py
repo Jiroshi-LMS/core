@@ -54,12 +54,9 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        if page:
-            serializer = self.get_serializer(page, many=True)
-            paginator = self.get_paginator()
-            return paginator.get_paginated_response(data=serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return success(data=serializer.data, msg="Successfully fetched !")
+        serializer = self.get_serializer(page, many=True)
+        paginator = self.get_paginator()
+        return paginator.get_paginated_response(data=serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         course = self.get_object()
@@ -103,12 +100,9 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        if page:
-            serializer = self.get_serializer(page, many=True)
-            paginator = self.get_paginator()
-            return paginator.get_paginated_response(data=serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return success(data=serializer.data, msg="Successfully fetched !")
+        serializer = self.get_serializer(page, many=True)
+        paginator = self.get_paginator()
+        return paginator.get_paginated_response(data=serializer.data)
     
     def retrieve(self, request, *args, **kwargs):
         lesson = self.get_object()
@@ -180,12 +174,9 @@ class StudentEnrolledCoursesView(ListModelMixin, HeadlessGenericView):
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        if page:
-            serializer = self.get_serializer(page, many=True)
-            paginator = self.get_paginator()
-            return paginator.get_paginated_response(data=serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return success(data=serializer.data, msg="Successfully fetched !")
+        serializer = self.get_serializer(page, many=True)
+        paginator = self.get_paginator()
+        return paginator.get_paginated_response(data=serializer.data)
         
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
