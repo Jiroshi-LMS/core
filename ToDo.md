@@ -37,6 +37,7 @@
 - [x] Enroll into Course
 - [x] List Course Lessons
 - [x] Retrive Course Lesson Details
-- [] Fetch Lesson Resources
-- [] Student Enrolled Courses List
-- [] Student update details
+- [X] Student Enrolled Courses List
+- [X] Fetch Lesson Resources
+- [X] Student update details
+- [] Dynamic Selection for lesson resources

@@ -12,7 +12,8 @@ urlpatterns = [
     path('login/', views.StudentLoginView.as_view(), name='student-login'),
     path('refresh-token/', views.StudentRefreshTokenView.as_view(), name="student-refresh-token"),
     path('lookup/', views.StudentExistsLookup.as_view(), name="quick-student-exists-lookup"),
-    path('profile/', views.StudentProfileView.as_view(), name="student-profile")
+    path('profile/', views.StudentProfileView.as_view(), name="student-profile"),
+    path('account/update/', views.StudentAccountDetailsUpdateView.as_view(), name="student-account-update")
 
 ]
 

@@ -7,7 +7,8 @@ from apps.headless.common.helpers.request_helpers import get_refresh_transport_m
 from django.conf import settings
 from rest_framework.permissions import AllowAny
 
-from .serializers import (StudentPasswordAuthRequestSerializer, StudentLoginRequestSerializer)
+from .serializers import (StudentPasswordAuthRequestSerializer, StudentLoginRequestSerializer,
+                          StudentDetailsUpdateSerializer)
 from .services import StudentAuthService
 
 
@@ -133,3 +134,25 @@ class StudentProfileView(HeadlessAPIView):
             "uuid": student.uuid,
             "identifier": student.identifier,
         })
+    
+
+class StudentAccountDetailsUpdateView(HeadlessAPIView):
+    """
+    Student account details update
+    """
+    authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
+    permission_classes = [IsAuthenticatedStudent]
+    access_type = KEY_TYPES.get('pk')
+    
+    def put(self, request):
+        mode = get_refresh_transport_mode(request)
+        serializer = StudentDetailsUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        student_toks = StudentAuthService.updated_student_details(validated_data, request.student, request.instructor)
+        return get_response(
+            mode, 
+            student_toks['access'], 
+            student_toks['refresh']
+        )
