@@ -40,4 +40,4 @@
 - [X] Student Enrolled Courses List
 - [X] Fetch Lesson Resources
 - [X] Student update details
-- [] Dynamic Selection for lesson resources
+- [X] Dynamic Selection for lesson resources
