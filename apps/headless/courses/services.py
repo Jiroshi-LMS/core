@@ -43,33 +43,11 @@ class CourseLessonServices:
 
 class LessonResourceServices:
     @staticmethod
-    def get_lesson_resources(lesson_uuid: str, course_uuid: str, student: Student, instructor: Instructor):
+    def get_lesson_resources(lesson: CourseLesson, instructor: Instructor):
         """
         Validates student's access to course, then fetches lesson resources
         """
-        try:
-            base_queryset = CourseLessonServices.get_course_lesson_queryset(course_uuid, instructor, lesson_uuid)
-            base_queryset = CourseLessonServices.enrich_with_enrollment_status(base_queryset, student)
-            lesson = base_queryset.get()
-            if not lesson.is_enrolled:
-                raise ForbiddenError("Access Denied to the resources")
-            file_resources = LessonResourceSelector.get_resources_by_lesson(lesson, instructor)
-            return {
-                'notes': lesson.notes,
-                'related_links': lesson.related_links,
-                'file_resources': [
-                    {
-                        'uuid': file_resource.uuid,
-                        'title': file_resource.title,
-                        'file_size': file_resource.file_size,
-                        'file_type': file_resource.file_type,
-                        'file_url': S3Utils.get_signed_url(file_resource.file_key, expiration=Units.HOUR * 3),
-                    }
-                    for file_resource in file_resources
-                ],
-            }
-        except CourseLesson.DoesNotExist:
-            raise NotFoundError("Lesson not found!")
+        return LessonResourceSelector.get_resources_by_lesson(lesson, instructor)
 
 
 class CourseEnrollmentService:

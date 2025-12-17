@@ -1,5 +1,7 @@
 from rest_framework.serializers import ValidationError
 
+from rest_framework.serializers import ValidationError
+
 class DynamicFieldsMixin:
     """
     Mixin for serializers, to help with dynamic field selection
@@ -11,7 +13,6 @@ class DynamicFieldsMixin:
         super().__init__(*args, **kwargs)
 
         # CASE 1 — frontend did NOT provide selections → return full serializer
-        # selected_fields = None
         if selected_fields is None:
             return
 
@@ -25,12 +26,15 @@ class DynamicFieldsMixin:
         selected |= set(self.required_fields)
 
         existing = set(self.fields)
-        invalid = selected - existing
 
-        # CASE 3 — invalid selections → notify instead of silently returning full serializer
-        if invalid:
-            raise ValidationError(f"Invalid selections: {', '.join(invalid)}")
+        # silently ignore invalid fields
+        valid_selected = selected & existing
 
-        # CASE 4 — valid selections → prune rest
-        for field_name in existing - selected:
+        # CASE 3 — after ignoring invalids, nothing left → return full serializer
+        if not valid_selected:
+            return
+
+        # CASE 4 — prune unselected fields
+        for field_name in existing - valid_selected:
             self.fields.pop(field_name)
+

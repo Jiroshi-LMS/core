@@ -1,19 +1,20 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.dashboard.courses.models import Course, CourseLesson
-from apps.headless.common.permissions.common import (InstructorAPIKeyAuthentication, StudentJWTAuthentication, 
-                                                     IsAuthenticatedStudent)
+from apps.headless.common.permissions import (InstructorAPIKeyAuthentication, StudentJWTAuthentication, 
+                                                     IsAuthenticatedStudent, IsEnrolled)
 from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView, HeadlessGenericView
 from apps.headless.common.utilities.Response import success
-from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError
+from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError, ForbiddenError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.mixins import (
     ListModelMixin
 )
 
-from .filterset import CourseFilters, CourseLessonFilters, EnrolledCourseFilters
+from .filterset import CourseFilters, CourseLessonFilters, EnrolledCourseFilters, LessonResourcesFilters
 from .serializers import (CourseCatalogueSerializer, CourseLessonPublicViewSerializer, 
-                          CourseLessonEnrolledViewSerializer, EnrolledCoursesListSerializer)
+                          CourseLessonEnrolledViewSerializer, EnrolledCoursesListSerializer,
+                          LessonFileResourceListSerializer, LessonTextResourceSelectionSerializer)
 from .services import (CourseServices, CourseEnrollmentService, 
                        CourseLessonServices, LessonResourceServices,)
 
@@ -70,15 +71,17 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
     """
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
+    permission_classes = [IsEnrolled]
+
     serializer_class = CourseLessonPublicViewSerializer
+    lookup_field = 'uuid'
+    lookup_value_regex = "[0-9a-f-]+"
+    
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseLessonFilters
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'duration']
     ordering = ['-created_at']
-
-    lookup_field = 'uuid'
-    lookup_value_regex = "[0-9a-f-]+"
 
     def get_queryset(self):
         course_uuid = self.kwargs.get('course_uuid')
@@ -93,9 +96,11 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
         )
         base_queryset = CourseLessonServices.enrich_with_enrollment_status(base_queryset, student)
         try:
-            return base_queryset.get()
+            lesson = base_queryset.get()
         except CourseLesson.DoesNotExist:
             raise NotFoundError("Lesson not found!")
+        self.check_object_permissions(self.request, lesson)
+        return lesson
     
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -106,29 +111,59 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
     
     def retrieve(self, request, *args, **kwargs):
         lesson = self.get_object()
+        # if not lesson.is_enrolled:
+        #     raise ForbiddenError("Lesson not accessable, not enrolled in course !")
         serializer = CourseLessonEnrolledViewSerializer(instance=lesson)
         return success(data=serializer.data, msg="Successfully fetched !")
 
 
-class LessonResourcesView(HeadlessAPIView):
+class LessonResourcesView(ListModelMixin, HeadlessGenericView):
     """
     API to fetch lesson resources
     """
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
     permission_classes = [IsAuthenticatedStudent]
+    serializer_class = LessonFileResourceListSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = LessonResourcesFilters
+    search_fields = ['title']
+    ordering_fields = ['created_at', 'file_size']
+    ordering = ['-created_at']
 
-    def get(self, request, course_uuid, lesson_uuid):
-        """
-            List all lesson resources (files and text). 
-        """
-        list_data = LessonResourceServices.get_lesson_resources(
-            lesson_uuid, course_uuid, request.student, request.instructor,
+    def get_queryset(self, lesson: CourseLesson):
+        return LessonResourceServices.get_lesson_resources(
+            lesson, self.request.instructor,
         )
-        return success(
-            data=list_data,
-            msg="Resources Fetched Successfully"
-        )
+    
+    def get_text_resource_serializer(self, *args, **kwargs):
+        selections_param = self.request.query_params.get("selections")
+        if selections_param:
+            fields = [field.strip() for field in selections_param.split(",") if field.strip()]
+            kwargs["fields"] = fields
+        return LessonTextResourceSelectionSerializer(*args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        course_uuid = kwargs.get('course_uuid')
+        lesson_uuid = kwargs.get('lesson_uuid')
+        student = getattr(request, 'student', None)
+        base_queryset = CourseLessonServices.get_course_lesson_queryset(course_uuid, request.instructor, lesson_uuid)
+        base_queryset = CourseLessonServices.enrich_with_enrollment_status(base_queryset, student)
+        try:
+            lesson = base_queryset.get()
+            if not lesson.is_enrolled:
+                raise ForbiddenError("Access Denied to the resources")
+        except CourseLesson.DoesNotExist:
+            raise NotFoundError("Lesson not found!")
+        queryset = self.filter_queryset(self.get_queryset(lesson))
+        page = self.paginate_queryset(queryset)
+        text_resource_serializer = self.get_text_resource_serializer(instance=lesson)
+        serializer = self.get_serializer(page, many=True)
+        paginator = self.get_paginator()
+        return paginator.get_paginated_response(data=serializer.data, extra=text_resource_serializer.data)
+        
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 
 class CourseEnrollmentView(HeadlessAPIView):

@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from apps.core.constants import DefaultObjectKeys, Urls
+from apps.core.constants import DefaultObjectKeys, Urls, Units
 from apps.core.utilities import S3Utils
-from apps.dashboard.courses.models import Course, CourseLesson
+from apps.dashboard.courses.models import Course, CourseLesson, LessonResource
 from apps.headless.common.utilities.DynamicSerializerSelector import DynamicFieldsMixin
 
 from .models import Enrollments
@@ -61,8 +61,39 @@ class CourseLessonEnrolledViewSerializer(DynamicFieldsMixin, serializers.ModelSe
         video_key = obj.media_key
         if not video_key or not obj.is_enrolled:
             return None
-        return S3Utils.get_signed_url(object_key=video_key, expiration=3600)
+        return S3Utils.get_signed_url(object_key=video_key, expiration=Units.HOUR * 4)
     
+
+class LessonTextResourceSelectionSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    notes = serializers.CharField(required=True)
+    related_links = serializers.JSONField(required=True)
+
+    class Meta:
+        model = CourseLesson
+        fields = [
+            'notes', 'related_links'
+        ]
+    
+
+class LessonFileResourceListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    file_size = serializers.IntegerField(required=True)
+    file_type = serializers.CharField(required=True)
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LessonResource
+        fields = [
+            'uuid', 'title', 'file_size', 
+            'file_type', 'file_url', 'created_at'
+        ]
+
+    def get_file_url(self, obj):
+        file_key = obj.file_key
+        if not file_key:
+            return None
+        return S3Utils.get_signed_url(obj.file_key, expiration=Units.HOUR * 4)
+
 
 class EnrolledCoursesListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     uuid = serializers.UUIDField(source='course.uuid')

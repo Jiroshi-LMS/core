@@ -10,14 +10,15 @@ class HeadlessPageNumberPaginator(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 150
 
-    def get_paginated_response(self, data, msg="Successfully Fetched"):
+    def get_paginated_response(self, data, msg="Successfully Fetched", extra: dict = {}):
         return success(data={
             "count": self.page.paginator.count,
             "total_pages": self.page.paginator.num_pages,
             "current_page": self.page.number,
             "next": self.get_next_link(),
             "previous": self.get_previous_link(),
-            "results": data
+            "results": data,
+            **extra
         }, msg=msg)
     
 
@@ -30,7 +31,7 @@ class HeadlessCursorPagination(CursorPagination):
     cursor_query_param = 'cursor' # Customize the query parameter name from 'cursor' to 'cu'
     offset_cutoff = 3000  # Max number of items in a page before a hard cutoff
 
-    def get_paginated_response(self, data, msg="Successfully Fetched"):
+    def get_paginated_response(self, data, msg="Successfully Fetched", extra: dict = {}):
         next_link = self.get_next_link()
         prev_link = self.get_previous_link()
 
@@ -43,7 +44,8 @@ class HeadlessCursorPagination(CursorPagination):
             "previous": prev_link,
             "next_cursor": next_cursor,
             "previous_cursor": prev_cursor,
-            "results": data
+            "results": data,
+            **extra
         }, msg=msg)
 
 
