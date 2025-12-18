@@ -81,7 +81,7 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
     filterset_class = CourseLessonFilters
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'duration']
-    ordering = ['-created_at']
+    ordering = ['created_at']
 
     def get_queryset(self):
         course_uuid = self.kwargs.get('course_uuid')
