@@ -215,12 +215,52 @@ CELERY_TIMEZONE = 'UTC'
 
 
 # CORS SETTINGS
+# For headless LMS - DYNAMIC configuration for any custom domain
 
+# 1. Enable credentials (required for HTTP-only cookies)
 CORS_ALLOW_CREDENTIALS = True
 
+# 2. Allow ANY domain dynamically
+# The trick: We can't use "Allow All = True" with credentials.
+# Instead, we use a Regex that matches EVERYTHING.
+# This tells Django to "reflect" the incoming Origin header back to the browser,
+# which satisfies the browser's security check for credentials.
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https?://.*$",
+    r"^.*$",  # Match any origin (http, https, localhost, capacitor, etc.)
+]
+
+# Note: We explicitly DO NOT set CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS list is also not needed anymore as the regex covers everything.
+
+# Allowed methods for API requests
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Allowed headers (including custom API key header)
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-api-key',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 # Apply CORS only to headless API
 CORS_URLS_REGEX = r"^/api/.*$"
+
+# Cookie settings for cross-origin requests
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = not DEBUG  # True in production (HTTPS required)
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS required)
