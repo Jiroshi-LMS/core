@@ -1,19 +1,3 @@
-# Config
-
-- Setup Docker Compose
-
-# Dashboard Services
-
-- Need to ensure that an instructor is only able to access only his related data (courses, lessons, students etc.)
-- Generate Unique API Key for Instructor
-
-# Fixes
-
-- Store lesson video size as well
-- Store more precise lesson video duration
-- Look for API bottlenecks and slow api process
-- Apply caching and cache invalidation where-ever its required
-
 # IMPORTANT
 
 - S3 Cleanup
@@ -24,20 +8,23 @@
 - Maintain a dedicated table for keeping track of each item uploaded by each instructor ( This is different from keeping track of each s3 open as mentioned above. The purpose here is to keep track of instructor's storage usage )
 
 
-# Headless APIs:
 
-- [x] Instructor Profile
-- [x] Student Signup Auth
-- [x] Student Login Auth
-- [x] Student Refresh Token
-- [x] Student Profile
-- [x] Student Identifier Exists Lookup
-- [x] List Course
-- [x] Retrieve Course
-- [x] Enroll into Course
-- [x] List Course Lessons
-- [x] Retrive Course Lesson Details
-- [X] Student Enrolled Courses List
-- [X] Fetch Lesson Resources
-- [X] Student update details
-- [X] Dynamic Selection for lesson resources
+# To-Dos
+
+## Dashboard APIs
+
+- [] Dashboard KPIs
+- [] Enrollments Tracking API
+- [] Media and Storage Management Library
+- [] Permission's on individual courses and lessons
+
+## Headless APIs
+
+- [] KPIs (Dashboard, Courses, Enrollments)
+- [] Total Count of Lessons and Courses in lesson and course list
+- [] Organise extras and paginated response properly
+- [] Permission's on individual courses and lessons
+- [] Instructor Payment Module
+- [] Course Trailers
+- [] Course Tags
+- [] List of featured courses
