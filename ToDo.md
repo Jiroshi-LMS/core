@@ -13,6 +13,9 @@
 
 ## Dashboard APIs
 
+- [] Refresh Token Rotation Fix
+- [] Dashboard Logout
+- [] Check & Test Refresh and access tokens on dashboard
 - [] Dashboard KPIs
 - [] Enrollments Tracking API
 - [] Media and Storage Management Library
@@ -20,6 +23,10 @@
 
 ## Headless APIs
 
+- [] Password Update Security
+- [] Student Logout API
+- [] Refresh Token Rotation
+- [] Update the Check student exists api to POST Request
 - [] KPIs (Dashboard, Courses, Enrollments)
 - [] Total Count of Lessons and Courses in lesson and course list
 - [] Organise extras and paginated response properly

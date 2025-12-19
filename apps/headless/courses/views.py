@@ -111,8 +111,6 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
     
     def retrieve(self, request, *args, **kwargs):
         lesson = self.get_object()
-        # if not lesson.is_enrolled:
-        #     raise ForbiddenError("Lesson not accessable, not enrolled in course !")
         serializer = CourseLessonEnrolledViewSerializer(instance=lesson)
         return success(data=serializer.data, msg="Successfully fetched !")
 
