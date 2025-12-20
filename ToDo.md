@@ -14,7 +14,7 @@
 ## Dashboard APIs
 
 ### MVP 1
-- [] Refresh Token Rotation Fix
+- [X] Refresh Token Rotation Fix
 - [] Dashboard Logout
 - [] Check & Test Refresh and access tokens on dashboard
 - [X] Dashboard KPIs

@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from .models import Instructor
 from .serializers import (
@@ -239,44 +240,49 @@ class InstructorViewSet(viewsets.ModelViewSet):
             status.HTTP_200_OK, True, 
             msg="Instructor's password updated successfully."
         ).json()
-    
+
 
 class CustomTokenRefreshView(TokenRefreshView):
-    """
-    Custom token refresh view to allow refreshing of instructor tokens.
-    """
     serializer_class = TokenRefreshSerializer
 
     @handle_exceptions
     def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get('instructor_refresh_token')
+        refresh_token = request.COOKIES.get("instructor_refresh_token")
+
         if not refresh_token:
             return Res(
-                status.HTTP_401_UNAUTHORIZED, False, 
+                status.HTTP_401_UNAUTHORIZED, False,
                 msg=CommonErrors.TOKEN_EXPIRED
             ).json()
-        
+
+        serializer = self.get_serializer(data={"refresh": refresh_token})
+
         try:
-            refresh = RefreshToken(refresh_token)
-            instructor = instructor_selector.get_by_id(refresh['instructor_id'])
-
-            access = refresh.access_token
-            new_refresh = refresh
-
+            serializer.is_valid(raise_exception=True)
+        except (InvalidToken, TokenError):
             return Res(
-                status.HTTP_200_OK, True, 
-                data={
-                    'instructor_id': instructor.uuid,
-                    'access_token': str(access),
-                },
-                msg="Instructor token refreshed successfully."
-            ).json_with_cookies({
+                status.HTTP_401_UNAUTHORIZED, False,
+                msg=CommonErrors.TOKEN_EXPIRED
+            ).json()
+
+        data = serializer.validated_data
+
+        response_obj = Res(
+            status.HTTP_200_OK, True, 
+            data={
+                "access_token": data["access"],
+            },
+            msg="Instructor token refreshed successfully."
+        )
+
+        # If rotation is enabled, SimpleJWT gives new refresh
+        if "refresh" in data:
+            response = response_obj.json_with_cookies({
                 'key': 'instructor_refresh_token',
-                'value': str(new_refresh),
+                'value': data["refresh"],
                 'expiry_seconds': ENV.REFRESH_TOKEN_EXP * 24 * 60 * 60
             })
-        except RefreshToken.DoesNotExist:
-            return Res(
-                status.HTTP_401_UNAUTHORIZED, False, 
-                msg=CommonErrors.TOKEN_EXPIRED
-            ).json()
+        else:
+            response = response_obj.json()
+
+        return response
