@@ -8,6 +8,13 @@ class StudentSelector():
     Student management repository layer
     """
     @staticmethod
+    def get_all(instructor: Instructor):
+        """
+        Get all students queryset
+        """
+        return Student.objects.filter(instructor=instructor)
+
+    @staticmethod
     def create_student(student_data: dict, instructor: Instructor):
         """
         Creation call

@@ -15,6 +15,10 @@ class CourseSelector:
             return Course.objects.get(uuid=uuid, created_by=instructor)
         return Course.objects.get(uuid=uuid)
     
+    @staticmethod
+    def get_all_active(instructor: Instructor):
+        return Course.objects.filter(created_by=instructor, access_status='active')
+    
     @staticmethod    
     def create(validated_data, created_by):
         return Course.objects.create(

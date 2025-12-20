@@ -96,6 +96,12 @@ class EnrollmentSelector:
     Repo for Enrollments
     """
     @staticmethod
+    def get_all(instructor: Instructor):
+        return Enrollments.objects.filter(
+            course__created_by=instructor
+        )
+
+    @staticmethod
     def create(student: Student, course: Course):
         return Enrollments.objects.create(
             student=student,

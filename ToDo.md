@@ -13,16 +13,20 @@
 
 ## Dashboard APIs
 
+### MVP 1
 - [] Refresh Token Rotation Fix
 - [] Dashboard Logout
 - [] Check & Test Refresh and access tokens on dashboard
 - [] Dashboard KPIs
 - [] Enrollments Tracking API
+
+### MVP 2
 - [] Media and Storage Management Library
 - [] Permission's on individual courses and lessons
 
 ## Headless APIs
 
+### MVP 1
 - [] Password Update Security
 - [] Student Logout API
 - [] Refresh Token Rotation
@@ -30,6 +34,8 @@
 - [] KPIs (Dashboard, Courses, Enrollments)
 - [] Total Count of Lessons and Courses in lesson and course list
 - [] Organise extras and paginated response properly
+
+### MVP 2
 - [] Permission's on individual courses and lessons
 - [] Instructor Payment Module
 - [] Course Trailers

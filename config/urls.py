@@ -44,6 +44,7 @@ urlpatterns = [
 
     # Dashboard Routes
     path(f"{BASE_PATH}/", include('apps.dashboard.instructors.urls')),
+    path(f"{BASE_PATH}/view/", include('apps.dashboard.dashboard.urls')),
     path(f"{BASE_PATH}/apikeys/", include('apps.dashboard.apikeys.urls')),
     path(f"{BASE_PATH}/courses/", include('apps.dashboard.courses.urls')),
 

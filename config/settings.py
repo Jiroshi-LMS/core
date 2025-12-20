@@ -60,6 +60,7 @@ DASHBOARD_APPS = [
     'apps.dashboard.audit',
     'apps.dashboard.courses',
     'apps.dashboard.apikeys',
+    'apps.dashboard.dashboard',
 ]
 
 HEADLESS_APPS = [
