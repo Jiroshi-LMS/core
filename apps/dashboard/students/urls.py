@@ -11,6 +11,7 @@ from . import views
 urlpatterns = [
     # Enrollments
     # path('enrollments/', views.EnrollmentsView.as_view(), name='enrollments-view')
+    path('list/', views.StudentListView.as_view(), name="student-list-view")
 ]
 
 # urlpatterns += router.urls

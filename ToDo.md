@@ -31,7 +31,7 @@
 - [] Student Logout API
 - [] Refresh Token Rotation
 - [] Update the Check student exists api to POST Request
-- [] KPIs (Dashboard, Courses, Enrollments)
+- [] KPIs (Students, Courses, Enrollments)
 - [] Total Count of Lessons and Courses in lesson and course list
 - [] Organise extras and paginated response properly
 
