@@ -17,7 +17,7 @@ class CourseSerializer(serializers.ModelSerializer):
         read_only=True
     )
     thumbnail_url = serializers.SerializerMethodField(read_only=True)
-    enrollments = serializers.SerializerMethodField(read_only=True)
+    enrollments = serializers.IntegerField(read_only=True, source='enrollments_count')
 
     class Meta:
         model = Course
@@ -33,10 +33,6 @@ class CourseSerializer(serializers.ModelSerializer):
             thumbnail = DefaultObjectKeys.THUMBNAIL
         return Urls.STATIC_S3_URL + thumbnail
 
-    def get_enrollments(self, obj):
-        # TODO: Implement Enrollments Count once students are implemented
-        return 0
-
 
 class CourseRetrieveSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
@@ -44,7 +40,7 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
     duration = serializers.DecimalField(default=0, max_digits=10, decimal_places=4, required=False)
     access_status = serializers.CharField(read_only=True)
     thumbnail_url = serializers.SerializerMethodField()
-    enrollments = serializers.SerializerMethodField()
+    enrollments = serializers.IntegerField(read_only=True, source='enrollments_count')
 
     class Meta:
         model = Course
@@ -59,10 +55,6 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
         if not thumbnail:
             thumbnail = DefaultObjectKeys.THUMBNAIL
         return Urls.STATIC_S3_URL + thumbnail
-
-    def get_enrollments(self, obj):
-        # TODO: Implement Enrollments
-        return 0
     
 
 class CourseUpdateSerializer(serializers.ModelSerializer):

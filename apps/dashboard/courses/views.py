@@ -4,6 +4,7 @@ from apps.core.decorators import handle_exceptions
 from apps.core.permissions import IsAuthenticated
 from apps.dashboard.common.utilities.Response import Res
 from apps.dashboard.common.utilities.Paginator import DashboardPageNumberPaginator
+from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.dashboard.instructors.permissions import IsOwner
 from rest_framework import status
@@ -38,19 +39,23 @@ class CourseViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseFilters
     search_fields = ['title', 'description']
-    ordering_fields = ['created_at', 'duration']
+    ordering_fields = ['created_at', 'duration', 'enrollments_count']
     ordering = ['-created_at']
 
     lookup_field = 'uuid'
     lookup_value_regex = "[0-9a-f-]+"
 
     def get_queryset(self):
-        return Course.objects.filter(created_by=self.request.user).order_by('-created_at', '-id')
+        return Course.objects.filter(created_by=self.request.user).annotate(
+            enrollments_count=Count('enrollments')
+        )
     
     def get_object(self):
         uuid = self.kwargs.get('uuid')
         if uuid:
-            return Course.objects.get(uuid=uuid, created_by=self.request.user)
+            return Course.objects.annotate(
+                enrollments_count=Count('enrollments')
+            ).get(uuid=uuid, created_by=self.request.user)
         return super().get_object()
 
     @handle_exceptions
