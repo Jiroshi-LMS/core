@@ -47,6 +47,7 @@ urlpatterns = [
     path(f"{BASE_PATH}/view/", include('apps.dashboard.dashboard.urls')),
     path(f"{BASE_PATH}/apikeys/", include('apps.dashboard.apikeys.urls')),
     path(f"{BASE_PATH}/courses/", include('apps.dashboard.courses.urls')),
+    path(f"{BASE_PATH}/students/", include('apps.dashboard.students.urls')),
 
     # Headless Routes
     path(f"{HEADLESS_PATH}/instructor/", include('apps.headless.instructor.urls')),
