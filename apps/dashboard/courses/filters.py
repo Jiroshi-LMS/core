@@ -1,4 +1,6 @@
 import django_filters
+
+from apps.headless.courses.models import Enrollments
 from .models import Course, CourseLesson
 
 
@@ -20,3 +22,16 @@ class LessonFilters(django_filters.FilterSet):
     class Meta:
         model = CourseLesson
         fields = ['title', 'status', 'created_at']
+
+
+class EnrollmentFilters(django_filters.FilterSet):
+    course_uuid = django_filters.UUIDFilter(field_name="course__uuid")
+    student_uuid = django_filters.UUIDFilter(field_name="student__uuid")
+    course_title = django_filters.CharFilter(field_name="course__title", lookup_expr='icontains')
+    student_identifier = django_filters.CharFilter(field_name="student__identifier", lookup_expr='icontains')
+    enrolled_at = django_filters.DateFromToRangeFilter(field_name='created_at')
+
+    class Meta:
+        model = Enrollments
+        fields = ['course_uuid', 'student_uuid', 'course_title',
+                  'student_identifier', 'enrolled_at']

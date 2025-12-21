@@ -8,6 +8,9 @@ router.register(r'views', views.CourseViewSet, basename="courses")
 router.register(r'lessons', views.CourseLessonViewSet)
 router.register(r'resources', views.LessonResourceViewSet)
 
-urlpatterns = []
+urlpatterns = [
+    # Enrollments
+    path('enrollments/', views.EnrollmentsView.as_view(), name='enrollments-view')
+]
 
 urlpatterns += router.urls

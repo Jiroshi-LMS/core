@@ -4,6 +4,7 @@ from apps.core.decorators import handle_exceptions
 from apps.core.permissions import IsAuthenticated
 from apps.dashboard.common.utilities.Response import Res
 from apps.dashboard.common.utilities.Paginator import DashboardPageNumberPaginator
+from apps.headless.courses.models import Enrollments
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.dashboard.instructors.permissions import IsOwner
@@ -11,15 +12,17 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import ListAPIView
 
-from .filters import CourseFilters, LessonFilters
+from .filters import CourseFilters, LessonFilters, EnrollmentFilters
 from .models import Course, CourseLesson, LessonResource
 from .selectors import CourseSelector, LessonSelector, LessonResourceSelector
 from .serializers import (
     CourseSerializer, CourseUpdateSerializer, 
     CourseLessonSerializer, CourseRetrieveSerializer, 
     CourseLessonUpdateSerializer, CourseLessonRetrieveSerializer, 
-    LessonResourceSerializer, LessonTextResourceSerializer
+    LessonResourceSerializer, LessonTextResourceSerializer,
+    EnrollmentsListSerializer
 )
 from .services import (
     CourseServices, CourseLessonServices,
@@ -351,3 +354,30 @@ class LessonResourceViewSet(ModelViewSet):
             status.HTTP_200_OK, True, 
             msg="Resource deleted successfully."
         ).json()
+
+
+class EnrollmentsView(ListAPIView):
+    """
+    List view for enrollments
+    """
+    serializer_class = EnrollmentsListSerializer
+    pagination_class = DashboardPageNumberPaginator
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = EnrollmentFilters
+    search_fields = ['student__identifier', 'course__title']
+    ordering_fields = {
+        'enrolled_at': 'created_at'
+    }
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        return Enrollments.objects.select_related('course', 'student').filter(
+            course__created_by=self.request.user
+        )
+
+    @handle_exceptions
+    def get(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        return self.paginator.get_paginated_response(data=serializer.data, msg="Enrollments fetched !")

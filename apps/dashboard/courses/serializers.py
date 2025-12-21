@@ -1,6 +1,7 @@
 from apps.core.constants import DefaultObjectKeys, ENV, Urls
 from apps.core.utilities import S3Utils
 from apps.dashboard.instructors.models import Instructor
+from apps.headless.courses.models import Enrollments
 from rest_framework import serializers
 
 from .models import Course, CourseLesson, LessonResource
@@ -172,3 +173,15 @@ class LessonTextResourceSerializer(serializers.ModelSerializer):
             
         return value
         
+
+class EnrollmentsListSerializer(serializers.ModelSerializer):
+    course_uuid = serializers.UUIDField(source='course.uuid')
+    student_uuid = serializers.UUIDField(source='student.uuid')
+    course_title = serializers.CharField(source='course.title')
+    student_identifier = serializers.CharField(source='student.identifier')
+    enrolled_at = serializers.DateTimeField(source='created_at')
+
+    class Meta:
+        model=Enrollments
+        fields = ['uuid', 'course_uuid', 'student_uuid', 
+                  'course_title', 'student_identifier', 'enrolled_at']
