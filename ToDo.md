@@ -15,8 +15,8 @@
 
 ### MVP 1
 - [X] Refresh Token Rotation Fix
-- [] Dashboard Logout
-- [] Check & Test Refresh and access tokens on dashboard
+- [X] Dashboard Logout
+- [X] Check & Test Refresh and access tokens on dashboard
 - [X] Dashboard KPIs
 - [] Enrollments Tracking API
 
