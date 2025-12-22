@@ -29,9 +29,9 @@ class EnrollmentFilters(django_filters.FilterSet):
     student_uuid = django_filters.UUIDFilter(field_name="student__uuid")
     course_title = django_filters.CharFilter(field_name="course__title", lookup_expr='icontains')
     student_identifier = django_filters.CharFilter(field_name="student__identifier", lookup_expr='icontains')
-    enrolled_at = django_filters.DateFromToRangeFilter(field_name='created_at')
+    created_at = django_filters.DateFromToRangeFilter(field_name='created_at')
 
     class Meta:
         model = Enrollments
         fields = ['course_uuid', 'student_uuid', 'course_title',
-                  'student_identifier', 'enrolled_at']
+                  'student_identifier', 'created_at']

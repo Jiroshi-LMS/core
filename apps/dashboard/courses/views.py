@@ -365,9 +365,7 @@ class EnrollmentsView(ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = EnrollmentFilters
     search_fields = ['student__identifier', 'course__title']
-    ordering_fields = {
-        'enrolled_at': 'created_at'
-    }
+    ordering_fields = ['created_at']
     ordering = ['-created_at']
     
     def get_queryset(self):

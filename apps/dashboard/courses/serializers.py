@@ -176,12 +176,11 @@ class LessonTextResourceSerializer(serializers.ModelSerializer):
 
 class EnrollmentsListSerializer(serializers.ModelSerializer):
     course_uuid = serializers.UUIDField(source='course.uuid')
-    student_uuid = serializers.UUIDField(source='student.uuid')
     course_title = serializers.CharField(source='course.title')
     student_identifier = serializers.CharField(source='student.identifier')
-    enrolled_at = serializers.DateTimeField(source='created_at')
+    created_at = serializers.DateTimeField()
 
     class Meta:
         model=Enrollments
-        fields = ['uuid', 'course_uuid', 'student_uuid', 
-                  'course_title', 'student_identifier', 'enrolled_at']
+        fields = ['uuid', 'course_uuid', 'course_title', 
+                  'student_identifier', 'created_at']
