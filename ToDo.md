@@ -18,7 +18,7 @@
 - [X] Dashboard Logout
 - [X] Check & Test Refresh and access tokens on dashboard
 - [X] Dashboard KPIs
-- [] Enrollments Tracking API
+- [X] Enrollments Tracking API
 
 ### MVP 2
 - [] Media and Storage Management Library
