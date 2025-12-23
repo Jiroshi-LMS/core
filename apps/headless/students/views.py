@@ -118,7 +118,11 @@ class StudentRefreshTokenView(HeadlessAPIView):
         student_toks = StudentAuthService.refresh_student_token(
             refresh_tok
         )
-        return success(data=student_toks, msg="Student token refreshed !")
+        return get_response(
+            mode, 
+            student_toks['access'], 
+            student_toks['refresh']
+        )
     
 
 class StudentProfileView(HeadlessAPIView):

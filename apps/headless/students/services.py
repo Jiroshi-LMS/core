@@ -1,9 +1,12 @@
 from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError, AuthError, RecordExistsError
 from django.contrib.auth.hashers import make_password, check_password
 from django.db import transaction, IntegrityError
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from .models import Student
+from .serializers import StudentTokenRefreshSerializer
 from .selectors import Instructor, StudentSelector
 
 class StudentAuthService():
@@ -11,7 +14,6 @@ class StudentAuthService():
     def get_auth_tokens(student: Student, instructor: Instructor):
         refresh = RefreshToken()
         refresh['student_id']=student.id
-        refresh['student_identifier']=student.identifier
         refresh['instructor_id']=instructor.id
 
         return {
@@ -55,28 +57,24 @@ class StudentAuthService():
             return False
         return True
 
-
     @staticmethod
     def refresh_student_token(refresh_tok: str):
         """
-        Student Token Refresh View 
+        Always rotates refresh token.
         """
         try:
-            refresh = RefreshToken(refresh_tok)
-            access_token = str(refresh.access_token)
+            serializer = StudentTokenRefreshSerializer(
+                data={"refresh": refresh_tok}
+            )
+            serializer.is_valid(raise_exception=True)
+        except (TokenError, InvalidToken):
+            raise AuthError("Invalid or expired refresh token")
 
-            payload = refresh.payload
-            student_id = payload["student_id"]
-            student_identifier = payload["student_identifier"]
-            instructor_id = payload["instructor_id"]
-        except (TokenError, KeyError):
-            raise AuthError()
-        
-        # new_refresh_tok = str(refresh)  # half ass-ed refresh token rotation
+        data = serializer.validated_data
 
         return {
-            "access": access_token
-            # "refresh": new_refresh
+            "access": data["access"],
+            "refresh": data["refresh"],  # rotation guaranteed
         }
     
     @staticmethod

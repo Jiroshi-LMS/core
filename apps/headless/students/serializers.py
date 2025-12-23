@@ -1,5 +1,24 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
+
+class StudentTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        refresh = self.token_class
+
+        if "refresh" in data:
+            new_refresh = RefreshToken(data["refresh"])
+
+            # 👇 copy custom claims
+            for key in ["student_id", "instructor_id"]:
+                if key in refresh:
+                    new_refresh[key] = refresh[key]
+
+            data["refresh"] = str(new_refresh)
+
+        return data
 
 class StudentPasswordAuthRequestSerializer(serializers.Serializer):
     identifier = serializers.CharField(required=True, max_length=255)
