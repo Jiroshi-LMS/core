@@ -26,7 +26,7 @@ def get_response(mode: str, access_tok: str, refresh_tok: str):
             "access_token": access_tok,
         }, msg=response_msg)
         response.set_cookie(
-            key="refresh_token",
+            key="student_refresh_token",
             value=refresh_tok,
             httponly=True,
             secure=True,
@@ -111,7 +111,7 @@ class StudentRefreshTokenView(HeadlessAPIView):
         mode = get_refresh_transport_mode(request)
         refresh_tok = request.data.get('refresh_token')
         if mode == TokenTransportMode.COOKIE:
-            refresh_tok = request.COOKIES.get("refresh_token")
+            refresh_tok = request.COOKIES.get("student_refresh_token")
             
         if not refresh_tok: 
             raise AuthError("Refresh Token required !")
@@ -158,3 +158,30 @@ class StudentAccountDetailsUpdateView(HeadlessAPIView):
             student_toks['access'], 
             student_toks['refresh']
         )
+    
+
+class StudentLogoutView(HeadlessAPIView):
+    """
+    Student Logout view.
+    Will check if refresh token exists in cookies,
+    and makes sure to remove them
+    """
+    authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
+    permission_classes = [IsAuthenticatedStudent]
+    access_type = KEY_TYPES.get('pk')
+
+    def post(self, request):
+        mode = get_refresh_transport_mode(request)
+        refresh_tok = request.data.get('refresh_token')
+        if mode == TokenTransportMode.COOKIE:
+            refresh_tok = request.COOKIES.get("student_refresh_token")
+        if not refresh_tok: 
+            raise AuthError("Refresh Token required !")
+        StudentAuthService.blacklist_token(refresh_tok)
+        response = success(msg="Student logged out!")
+        if mode == TokenTransportMode.COOKIE:
+            response.delete_cookie(
+                key="student_refresh_token",
+                path="/",
+            )
+        return response

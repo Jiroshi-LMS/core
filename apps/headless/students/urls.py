@@ -13,7 +13,8 @@ urlpatterns = [
     path('refresh-token/', views.StudentRefreshTokenView.as_view(), name="student-refresh-token"),
     path('lookup/', views.StudentExistsLookup.as_view(), name="quick-student-exists-lookup"),
     path('profile/', views.StudentProfileView.as_view(), name="student-profile"),
-    path('account/update/', views.StudentAccountDetailsUpdateView.as_view(), name="student-account-update")
+    path('account/update/', views.StudentAccountDetailsUpdateView.as_view(), name="student-account-update"),
+    path('logout/', views.StudentLogoutView.as_view(), name='student-logout'),
 
 ]
 

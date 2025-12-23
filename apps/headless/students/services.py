@@ -94,3 +94,12 @@ class StudentAuthService():
             return StudentAuthService.get_auth_tokens(student, instructor)
         except IntegrityError:
             raise RecordExistsError("Student with that information already exists !")
+        
+
+    @staticmethod
+    def blacklist_token(refresh_tok: str):
+        try:
+            refresh = RefreshToken(refresh_tok)
+            refresh.blacklist()
+        except (TokenError, KeyError):
+            raise AuthError()

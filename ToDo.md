@@ -28,8 +28,8 @@
 ## Headless APIs
 
 ### MVP 1
-- [] Student details update security
-- [] Student Logout API
+- [X] Student details update security
+- [X] Student Logout API
 - [] Refresh Token Rotation
 - [] Update the Check student exists api to POST Request
 - [] KPIs (Students, Courses, Enrollments)
