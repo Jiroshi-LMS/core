@@ -45,9 +45,6 @@ class InstructorViewSet(viewsets.ModelViewSet):
         instructor = instructor_selector.create_instructor(serializer.validated_data)
 
         refresh = RefreshToken.for_user(instructor)
-        refresh['instructor_id'] = instructor.id
-        refresh['instructor_username'] = instructor.username
-        refresh['instructor_email'] = instructor.email
         access = refresh.access_token
 
         logger.info(
@@ -86,9 +83,6 @@ class InstructorViewSet(viewsets.ModelViewSet):
             ).json()
         
         refresh = RefreshToken.for_user(instructor)
-        refresh['instructor_id'] = instructor.id
-        refresh['instructor_username'] = instructor.username
-        refresh['instructor_email'] = instructor.email
         access = refresh.access_token
         
         logger.info(

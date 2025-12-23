@@ -19,11 +19,12 @@
 - [X] Check & Test Refresh and access tokens on dashboard
 - [X] Dashboard KPIs
 - [X] Enrollments Tracking API
+- [] Account Details Update Security
 
 ### MVP 2
-- [] Improve account details update security
 - [] Media and Storage Management Library
 - [] Permission's on individual courses and lessons
+- [] Improve account details update security
 
 ## Headless APIs
 
