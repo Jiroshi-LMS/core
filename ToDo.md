@@ -21,13 +21,14 @@
 - [X] Enrollments Tracking API
 
 ### MVP 2
+- [] Improve account details update security
 - [] Media and Storage Management Library
 - [] Permission's on individual courses and lessons
 
 ## Headless APIs
 
 ### MVP 1
-- [] Password Update Security
+- [] Student details update security
 - [] Student Logout API
 - [] Refresh Token Rotation
 - [] Update the Check student exists api to POST Request
@@ -41,3 +42,10 @@
 - [] Course Trailers
 - [] Course Tags
 - [] List of featured courses
+
+
+## Architectural Updates
+- [] Apply Rate Limiting
+- [] Apply Anon Throttle
+- [] API Key Caching
+- [] Data Caching (maybe)

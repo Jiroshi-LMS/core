@@ -5,6 +5,7 @@ from apps.headless.common.permissions.common import InstructorAPIKeyAuthenticati
 from apps.headless.common.utilities import success, AuthError, InputValidationError
 from apps.headless.common.helpers.request_helpers import get_refresh_transport_mode
 from django.conf import settings
+from django.contrib.auth.hashers import check_password
 from rest_framework.permissions import AllowAny
 
 from .serializers import (StudentPasswordAuthRequestSerializer, StudentLoginRequestSerializer,
@@ -149,7 +150,8 @@ class StudentAccountDetailsUpdateView(HeadlessAPIView):
         serializer = StudentDetailsUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
-
+        if not check_password(validated_data.get('current_password'), request.student.password):
+            raise InputValidationError("Provided current password is incorrect")
         student_toks = StudentAuthService.updated_student_details(validated_data, request.student, request.instructor)
         return get_response(
             mode, 

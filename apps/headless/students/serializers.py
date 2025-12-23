@@ -12,3 +12,4 @@ class StudentLoginRequestSerializer(serializers.Serializer):
 class StudentDetailsUpdateSerializer(serializers.Serializer):
     identifier = serializers.CharField(required=False, max_length=255)
     password = serializers.CharField(required=False, max_length=72, min_length=8)
+    current_password = serializers.CharField(required=True)
