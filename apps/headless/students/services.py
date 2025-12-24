@@ -67,14 +67,14 @@ class StudentAuthService():
                 data={"refresh": refresh_tok}
             )
             serializer.is_valid(raise_exception=True)
-        except (TokenError, InvalidToken):
+        except (TokenError, InvalidToken) as e:
             raise AuthError("Invalid or expired refresh token")
 
         data = serializer.validated_data
 
         return {
             "access": data["access"],
-            "refresh": data["refresh"],  # rotation guaranteed
+            "refresh": data["refresh"],
         }
     
     @staticmethod
@@ -89,7 +89,7 @@ class StudentAuthService():
                         value = make_password(value)
                     setattr(student, key, value)
                 student.save()
-            return StudentAuthService.get_auth_tokens(student, instructor)
+            return student
         except IntegrityError:
             raise RecordExistsError("Student with that information already exists !")
         

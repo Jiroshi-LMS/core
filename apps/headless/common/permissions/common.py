@@ -87,7 +87,7 @@ class StudentJWTAuthentication(BaseAuthentication):
 
         student_id = payload.get("student_id")
         instructor_id = payload.get("instructor_id")
-
+        print(payload)
         if not student_id or not instructor_id:
             raise AuthenticationFailed("Malformed token")
 

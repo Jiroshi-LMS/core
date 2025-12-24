@@ -1,3 +1,5 @@
+import structlog
+
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.headless.common.constants import TokenTransportMode
 from apps.headless.common.utilities.BaseView import HeadlessAPIView
@@ -11,6 +13,9 @@ from rest_framework.permissions import AllowAny
 from .serializers import (StudentPasswordAuthRequestSerializer, StudentLoginRequestSerializer,
                           StudentDetailsUpdateSerializer)
 from .services import StudentAuthService
+
+
+logger = structlog.get_logger(__name__)
 
 
 
@@ -150,18 +155,13 @@ class StudentAccountDetailsUpdateView(HeadlessAPIView):
     access_type = KEY_TYPES.get('pk')
     
     def put(self, request):
-        mode = get_refresh_transport_mode(request)
         serializer = StudentDetailsUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
         if not check_password(validated_data.get('current_password'), request.student.password):
             raise InputValidationError("Provided current password is incorrect")
-        student_toks = StudentAuthService.updated_student_details(validated_data, request.student, request.instructor)
-        return get_response(
-            mode, 
-            student_toks['access'], 
-            student_toks['refresh']
-        )
+        StudentAuthService.updated_student_details(validated_data, request.student, request.instructor)
+        return success(msg="Student account details updated !")
     
 
 class StudentLogoutView(HeadlessAPIView):

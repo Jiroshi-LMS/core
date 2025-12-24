@@ -5,19 +5,21 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 class StudentTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
+        raw_old_token = attrs.get("refresh")
+        old_refresh = RefreshToken(raw_old_token)
+
         data = super().validate(attrs)
-        refresh = self.token_class
+        new_refresh = RefreshToken()
 
-        if "refresh" in data:
-            new_refresh = RefreshToken(data["refresh"])
+        # copy default claims SimpleJWT expects
+        new_refresh = RefreshToken(data["refresh"])
 
-            # 👇 copy custom claims
-            for key in ["student_id", "instructor_id"]:
-                if key in refresh:
-                    new_refresh[key] = refresh[key]
+        # copy your custom claims
+        for key in ["student_id", "instructor_id"]:
+            if key in old_refresh:
+                new_refresh[key] = old_refresh[key]
 
-            data["refresh"] = str(new_refresh)
-
+        data["refresh"] = str(new_refresh)
         return data
 
 class StudentPasswordAuthRequestSerializer(serializers.Serializer):
