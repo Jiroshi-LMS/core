@@ -98,12 +98,12 @@ class StudentExistsLookup(HeadlessAPIView):
     authentication_classes = [InstructorAPIKeyAuthentication]
     access_type = KEY_TYPES.get('pk')
 
-    def get(self, request):
-        identifier = request.query_params.get('identifier')
+    def post(self, request):
+        identifier = request.data.get('identifier')
         if not identifier:
             raise InputValidationError("Identifier missing")
-        exists = StudentAuthService.does_exist({"identifier": identifier})
-        return success(data=exists, msg="Status fetched")
+        exists = StudentAuthService.does_identifier_exist({"identifier": identifier})
+        return success(data={'student_exists': exists}, msg="Status fetched")
 
 
 class StudentRefreshTokenView(HeadlessAPIView):
@@ -117,7 +117,7 @@ class StudentRefreshTokenView(HeadlessAPIView):
         refresh_tok = request.data.get('refresh_token')
         if mode == TokenTransportMode.COOKIE:
             refresh_tok = request.COOKIES.get("student_refresh_token")
-            
+
         if not refresh_tok: 
             raise AuthError("Refresh Token required !")
         student_toks = StudentAuthService.refresh_student_token(

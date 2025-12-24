@@ -32,7 +32,7 @@
 - [X] Student details update security
 - [X] Student Logout API
 - [X] Refresh Token Rotation
-- [] Update the Check student exists api to POST Request
+- [X] Update the Check student exists api to POST Request
 - [] KPIs (Students, Courses, Enrollments)
 - [] Total Count of Lessons and Courses in lesson and course list
 - [] Organise extras and paginated response properly

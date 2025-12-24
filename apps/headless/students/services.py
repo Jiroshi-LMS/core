@@ -47,10 +47,9 @@ class StudentAuthService():
         return StudentAuthService.get_auth_tokens(student, instructor)
     
     @staticmethod
-    def does_exist(lookups: dict):
+    def does_identifier_exist(lookups: dict):
         """
-        Student Exists Quick Lookup. Unsure of the scope yet.
-        Limited to identifier as of now
+        Quick Lookup to check if student identifier exists.
         """
         student_queryset = StudentSelector.lookup({"identifier": lookups.get('identifier')})
         if not student_queryset.first():
