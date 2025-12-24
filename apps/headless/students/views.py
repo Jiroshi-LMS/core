@@ -18,7 +18,6 @@ from .services import StudentAuthService
 logger = structlog.get_logger(__name__)
 
 
-
 def get_response(mode: str, access_tok: str, refresh_tok: str):
     """
     Returns response object with the appropriate

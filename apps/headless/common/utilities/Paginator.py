@@ -12,13 +12,15 @@ class HeadlessPageNumberPaginator(PageNumberPagination):
 
     def get_paginated_response(self, data, msg="Successfully Fetched", extra: dict = {}):
         return success(data={
-            "count": self.page.paginator.count,
-            "total_pages": self.page.paginator.num_pages,
-            "current_page": self.page.number,
-            "next": self.get_next_link(),
-            "previous": self.get_previous_link(),
+            **extra,
             "results": data,
-            **extra
+            "pagination": {
+                "count": self.page.paginator.count,
+                "total_pages": self.page.paginator.num_pages,
+                "current_page": self.page.number,
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+            },
         }, msg=msg)
     
 
@@ -40,12 +42,14 @@ class HeadlessCursorPagination(CursorPagination):
         prev_cursor = self.extract_cursor_from_url(prev_link, is_previous=True) if prev_link else None
 
         return success(data={
-            "next": next_link,
-            "previous": prev_link,
-            "next_cursor": next_cursor,
-            "previous_cursor": prev_cursor,
+            **extra,
             "results": data,
-            **extra
+            "pagination": {
+                "next": next_link,
+                "previous": prev_link,
+                "next_cursor": next_cursor,
+                "previous_cursor": prev_cursor,
+            }
         }, msg=msg)
 
 

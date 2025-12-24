@@ -35,7 +35,7 @@
 - [X] Update the Check student exists api to POST Request
 - [] KPIs (Students, Courses, Enrollments)
 - [] Total Count of Lessons and Courses in lesson and course list
-- [] Organise extras and paginated response properly
+- [X] Organise extras and paginated response properly
 
 ### MVP 2
 - [] Permission's on individual courses and lessons
