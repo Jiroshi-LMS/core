@@ -1,4 +1,5 @@
 from apps.dashboard.apikeys.constants import KEY_TYPES
+from apps.dashboard.dashboard.services import DashboardKPIService
 from apps.headless.common.permissions.common import InstructorAPIKeyAuthentication
 from apps.headless.common.utilities.BaseView import HeadlessAPIView
 from apps.headless.common.utilities import (InputValidationError)
@@ -32,3 +33,14 @@ class InstructorProfileView(HeadlessAPIView):
             }
         )
     
+
+class InstructorKPIsView(HeadlessAPIView):
+    authentication_classes = [InstructorAPIKeyAuthentication]
+    access_type = KEY_TYPES.get('pk')
+
+    def get(self, request):
+        """
+        Fetch instructor related KPI Data
+        """
+        kpi_data = DashboardKPIService.get_kpi_data(request.instructor)
+        return success(data=kpi_data, msg="KPIs Fetched !")

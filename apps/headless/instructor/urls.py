@@ -8,7 +8,8 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     # General Information
-    path('profile/', views.InstructorProfileView.as_view(), name='instructor-profile-view')
+    path('profile/', views.InstructorProfileView.as_view(), name='instructor-profile-view'),
+    path('kpi/', views.InstructorKPIsView.as_view(), name='instructor-kpi-view')
 ]
 
 urlpatterns += router.urls
