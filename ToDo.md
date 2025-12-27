@@ -45,7 +45,7 @@
 
 
 ## Architectural Updates
-- [] Apply Rate Limiting
-- [] Apply Anon Throttle
+- [X] Apply Rate Limiting
+- [X] Apply Anon Throttle
 - [] API Key Caching
 - [] Data Caching (maybe)

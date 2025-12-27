@@ -183,10 +183,18 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
+        "apps.core.throttles.dashboard_throttle.InstructorAuthBurstThrottle",
+        "apps.core.throttles.dashboard_throttle.InstructorRateThrottle",
+        "apps.core.throttles.headless_throttle.StudentAuthBurstThrottle",
+        "apps.core.throttles.headless_throttle.StudentRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "50/min",
+        "anon": "100/min",
         "user": "1000/min",
+        "instructor": "1000/min",
+        "student": "300/min",
+        "instructor_auth": "10/min",
+        "student_auth": "10/min",
     },
 }
 
