@@ -69,10 +69,12 @@ class InstructorInfoUpdateSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False)
     email = serializers.EmailField(required=False)
     phone_number = serializers.CharField(required=False)
+    current_password = serializers.CharField(required=True)
 
     class Meta:
         model = Instructor
         fields = [
-            'uuid', 'created_at', 'full_name', 'username', 'email', 'phone_number'
+            'uuid', 'created_at', 'full_name', 'username', 'email', 'phone_number',
+            'current_password'
         ]
         read_only_fields = ['uuid', 'created_at']

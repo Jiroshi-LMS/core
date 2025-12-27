@@ -202,6 +202,11 @@ class InstructorViewSet(viewsets.ModelViewSet):
         serializer = InstructorInfoUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instructor = instructor_selector.get_by_id(request.user.id)
+        if not instructor.check_password(serializer.validated_data.get('current_password', '')):
+            return Res(
+                status.HTTP_400_BAD_REQUEST, False, 
+                msg="Invalid password provided."
+            ).json()
         instructor_selector.update_info(instructor, serializer.validated_data)
 
         return Res(
