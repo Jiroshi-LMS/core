@@ -19,7 +19,7 @@
 - [X] Check & Test Refresh and access tokens on dashboard
 - [X] Dashboard KPIs
 - [X] Enrollments Tracking API
-- [] Account Details Update Security
+- [X] Account Details Update Security
 
 ### MVP 2
 - [] Media and Storage Management Library
@@ -34,7 +34,6 @@
 - [X] Refresh Token Rotation
 - [X] Update the Check student exists api to POST Request
 - [X] KPIs (Students, Courses, Enrollments)
-- [] Total Count of Lessons and Courses in lesson and course list
 - [X] Organise extras and paginated response properly
 
 ### MVP 2
