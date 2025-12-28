@@ -1,3 +1,4 @@
+from apps.core.throttles.headless_throttle import StudentOpenRateThrottle, StudentRateThrottle, StudentAuthBurstThrottle
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.dashboard.courses.models import Course, CourseLesson
 from apps.headless.common.permissions import (InstructorAPIKeyAuthentication, StudentJWTAuthentication, 
@@ -24,6 +25,7 @@ class CourseCatalogueViewset(HeadlessReadOnlyViewSet):
     To allow open access to course list and retrival
     """
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
+    throttle_classes = [StudentOpenRateThrottle]
     access_type = KEY_TYPES.get('pk')
     serializer_class = CourseCatalogueSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -72,6 +74,7 @@ class CourseLessonViewset(HeadlessReadOnlyViewSet):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
     permission_classes = [IsEnrolled]
+    throttle_classes = [StudentOpenRateThrottle]
 
     serializer_class = CourseLessonPublicViewSerializer
     lookup_field = 'uuid'
@@ -122,6 +125,7 @@ class LessonResourcesView(ListModelMixin, HeadlessGenericView):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
     permission_classes = [IsAuthenticatedStudent]
+    throttle_classes = [StudentRateThrottle]
     serializer_class = LessonFileResourceListSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = LessonResourcesFilters
@@ -171,6 +175,7 @@ class CourseEnrollmentView(HeadlessAPIView):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
     permission_classes = [IsAuthenticatedStudent]
+    throttle_classes = [StudentAuthBurstThrottle]
 
     def post(self, request):
         course_uuid = request.data.get("course_uuid")
@@ -190,6 +195,7 @@ class StudentEnrolledCoursesView(ListModelMixin, HeadlessGenericView):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     access_type = KEY_TYPES.get('pk')
     permission_classes = [IsAuthenticatedStudent]
+    throttle_classes = [StudentRateThrottle]
     serializer_class = EnrolledCoursesListSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = EnrolledCourseFilters

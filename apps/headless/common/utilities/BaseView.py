@@ -126,11 +126,3 @@ class HeadlessGenericView(GenericAPIView):
             kwargs["fields"] = fields
 
         return super().get_serializer(*args, **kwargs)
-    
-
-##########################
-# Dynamic Headless Views
-##########################
-
-class DynamicAPIView(HeadlessAPIView):
-    selection_options = []

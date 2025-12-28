@@ -195,6 +195,7 @@ REST_FRAMEWORK = {
         "student": "300/min",
         "instructor_auth": "10/min",
         "student_auth": "10/min",
+        "student_public": "200/min"
     },
 }
 

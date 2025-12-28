@@ -1,5 +1,6 @@
 import structlog
 
+from apps.core.throttles.headless_throttle import StudentAuthBurstThrottle, StudentRateThrottle
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.headless.common.constants import TokenTransportMode
 from apps.headless.common.utilities.BaseView import HeadlessAPIView
@@ -54,6 +55,7 @@ class StudentSignUpView(HeadlessAPIView):
     """
     authentication_classes = [InstructorAPIKeyAuthentication]
     access_type = KEY_TYPES.get('pk')
+    throttle_classes = [StudentAuthBurstThrottle]
     
     def post(self, request):
         mode = get_refresh_transport_mode(request)
@@ -75,6 +77,7 @@ class StudentLoginView(HeadlessAPIView):
     """
     authentication_classes = [InstructorAPIKeyAuthentication]
     access_type = KEY_TYPES.get('pk')
+    throttle_classes = [StudentAuthBurstThrottle]
 
     def post(self, request):
         mode = get_refresh_transport_mode(request)
@@ -110,6 +113,7 @@ class StudentRefreshTokenView(HeadlessAPIView):
     Student Refresh Token
     """
     permission_classes = [AllowAny]
+    throttle_classes = [StudentAuthBurstThrottle]
 
     def post(self, request):
         mode = get_refresh_transport_mode(request)
@@ -136,6 +140,7 @@ class StudentProfileView(HeadlessAPIView):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     permission_classes = [IsAuthenticatedStudent]
     access_type = KEY_TYPES.get('pk')
+    throttle_classes = [StudentRateThrottle]
 
     def get(self, request):
         student = request.student
@@ -152,6 +157,7 @@ class StudentAccountDetailsUpdateView(HeadlessAPIView):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     permission_classes = [IsAuthenticatedStudent]
     access_type = KEY_TYPES.get('pk')
+    throttle_classes = [StudentAuthBurstThrottle]
     
     def put(self, request):
         serializer = StudentDetailsUpdateSerializer(data=request.data)
@@ -172,6 +178,7 @@ class StudentLogoutView(HeadlessAPIView):
     authentication_classes = [InstructorAPIKeyAuthentication, StudentJWTAuthentication]
     permission_classes = [IsAuthenticatedStudent]
     access_type = KEY_TYPES.get('pk')
+    throttle_classes = [StudentAuthBurstThrottle]
 
     def post(self, request):
         mode = get_refresh_transport_mode(request)
