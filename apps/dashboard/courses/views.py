@@ -2,6 +2,7 @@ import structlog
 
 from apps.core.decorators import handle_exceptions
 from apps.core.permissions import IsAuthenticated
+from apps.core.throttles.dashboard_throttle import InstructorRateThrottle
 from apps.dashboard.common.utilities.Response import Res
 from apps.dashboard.common.utilities.Paginator import DashboardPageNumberPaginator
 from apps.headless.courses.models import Enrollments
@@ -39,6 +40,7 @@ class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     pagination_class = DashboardPageNumberPaginator
     permission_classes = [IsAuthenticated, IsOwner]
+    throttle_classes = [InstructorRateThrottle]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseFilters
     search_fields = ['title', 'description']
@@ -151,6 +153,7 @@ class CourseViewSet(ModelViewSet):
 class CourseLessonViewSet(ModelViewSet):
     queryset = CourseLesson.objects.all()
     permission_classes = [IsAuthenticated, IsOwner]
+    throttle_classes = [InstructorRateThrottle]
     serializer_class = CourseLessonSerializer
     pagination_class = DashboardPageNumberPaginator
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -264,6 +267,7 @@ class CourseLessonViewSet(ModelViewSet):
 class LessonResourceViewSet(ModelViewSet):
     queryset = LessonResource.objects.all()
     permission_classes = [IsAuthenticated, IsOwner]
+    throttle_classes = [InstructorRateThrottle]
     serializer_class = LessonResourceSerializer
     pagination_class = DashboardPageNumberPaginator
 
@@ -360,6 +364,8 @@ class EnrollmentsView(ListAPIView):
     """
     List view for enrollments
     """
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [InstructorRateThrottle]
     serializer_class = EnrollmentsListSerializer
     pagination_class = DashboardPageNumberPaginator
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]

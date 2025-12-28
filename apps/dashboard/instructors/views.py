@@ -5,6 +5,7 @@ from apps.core.constants import ENV, CommonErrors
 from apps.core.decorators import handle_exceptions
 from apps.core.permissions import IsAuthenticated
 from apps.core.utilities import S3Utils
+from apps.core.throttles.dashboard_throttle import InstructorRateThrottle, InstructorAuthBurstThrottle
 from apps.dashboard.common.utilities.Response import Res
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
@@ -34,6 +35,7 @@ instructor_selector = InstructorSelector()
 class InstructorViewSet(viewsets.ModelViewSet):
     queryset = Instructor.objects.select_related('profile').all()
     serializer_class = InstructorSerializer
+    throttle_classes = [InstructorAuthBurstThrottle]
 
     @handle_exceptions
     def create(self, request, *args, **kwargs):
@@ -151,7 +153,13 @@ class InstructorViewSet(viewsets.ModelViewSet):
     
 
     @handle_exceptions
-    @action(detail=False, methods=['GET'], url_path='me', permission_classes=[IsAuthenticated])
+    @action(
+        detail=False, 
+        methods=['GET'], 
+        url_path='me', 
+        permission_classes=[IsAuthenticated],
+        throttle_classes=[InstructorRateThrottle]
+    )
     def get_profile(self, request, *args, **kwargs):
         serializer = self.get_serializer(request.user)
         return Res(
@@ -243,6 +251,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
 
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = TokenRefreshSerializer
+    throttle_classes = [InstructorAuthBurstThrottle]
 
     @handle_exceptions
     def post(self, request, *args, **kwargs):

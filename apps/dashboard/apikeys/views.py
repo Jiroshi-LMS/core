@@ -1,6 +1,7 @@
 from apps.core.decorators import handle_exceptions
-from apps.dashboard.common.utilities.Response import Res
 from apps.core.permissions import IsAuthenticated
+from apps.core.throttles.dashboard_throttle import InstructorRateThrottle
+from apps.dashboard.common.utilities.Response import Res
 from apps.dashboard.common.utilities.Paginator import DashboardPageNumberPaginator
 from rest_framework import status
 from rest_framework.views import APIView
@@ -14,6 +15,7 @@ from .serializers import APIKeyBaseSerializer, APIKeyListSerializer
 
 class APIKeysViewset(ModelViewSet):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [InstructorRateThrottle]
     serializer_class = APIKeyBaseSerializer
     pagination_class = DashboardPageNumberPaginator
 

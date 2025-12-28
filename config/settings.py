@@ -87,9 +87,9 @@ MIDDLEWARE = [
 
 if not DEBUG:
     MIDDLEWARE += [
-        'core.middleware.APILoggingMiddleware',
-        'core.middleware.SecurityHeadersMiddleware',
-        'core.middleware.RateLimitMiddleware',
+        'apps.core.middleware.APILoggingMiddleware',
+        'apps.core.middleware.SecurityHeadersMiddleware',
+        # 'apps.core.middleware.RateLimitMiddleware',
     ]
 
 ROOT_URLCONF = 'config.urls'

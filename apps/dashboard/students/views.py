@@ -1,4 +1,5 @@
 from apps.core.decorators import handle_exceptions
+from apps.core.throttles.dashboard_throttle import InstructorRateThrottle
 from apps.dashboard.common.utilities.Response import Res
 from apps.dashboard.common.utilities.Paginator import DashboardPageNumberPaginator
 from apps.headless.students.models import Student
@@ -18,6 +19,7 @@ class StudentListView(ListAPIView):
     View for listing instructor students
     """
     permission_classes = [IsAuthenticated]
+    throttle_classes = [InstructorRateThrottle]
     pagination_class = DashboardPageNumberPaginator
     serializer_class = StudentListSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
