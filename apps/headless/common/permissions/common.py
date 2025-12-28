@@ -5,16 +5,25 @@ from apps.dashboard.apikeys.constants import KEY_SEPARATOR, KEY_TYPES
 from apps.dashboard.apikeys.models import ApiKeys
 from apps.dashboard.instructors.models import Instructor
 from apps.headless.common.constants import ERR_CODES
-from apps.headless.common.utilities import ServerError, InputValidationError, AuthError
+from apps.headless.common.utilities import ServerError, InputValidationError, AuthError, NotFoundError
 from apps.headless.students.models import Student
+from datetime import timedelta
+from django.core.cache import cache
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
-from django.conf import settings
+from django.utils import timezone
 from rest_framework import permissions
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.backends import TokenBackend
+
+
+
+API_KEY_CACHE_PREFIX = "api_key"
+API_KEY_FALLBACK_TTL = 10 * 60  # 10 minutes
+
 
 
 class InstructorAPIKeyAuthentication(BaseAuthentication):
@@ -36,6 +45,20 @@ class InstructorAPIKeyAuthentication(BaseAuthentication):
 
         if KEY_TYPES.get(key_type) != access_type:
             raise AuthenticationFailed("Invalid API key type")
+        
+        cache_key = f"{API_KEY_CACHE_PREFIX}:{key_id}"
+        cached = cache.get(cache_key)
+
+        if cached:
+            if cached["key_type"] != access_type:
+                raise AuthenticationFailed("Invalid API key type")
+
+            try:
+                request.instructor = Instructor.objects.get(id=cached["instructor_id"])
+                return None
+            except Instructor.DoesNotExist:
+                raise NotFoundError("Instructor not found")
+
 
         key = (
             ApiKeys.objects
@@ -57,9 +80,24 @@ class InstructorAPIKeyAuthentication(BaseAuthentication):
         ):
             raise AuthenticationFailed("Invalid API key")
 
+        if key.expires_at:
+            ttl = int((key.expires_at - timezone.now()).total_seconds())
+            ttl = max(0, min(ttl, API_KEY_FALLBACK_TTL))
+        else:
+            ttl = API_KEY_FALLBACK_TTL
+
+        cache.set(
+            cache_key,
+            {
+                "instructor_id": key.instructor_id,
+                "key_type": key.key_type,
+            },
+            timeout=ttl,
+        )
+
         request.instructor = key.instructor
         return None
-    
+
 
 class StudentJWTAuthentication(BaseAuthentication):
 
