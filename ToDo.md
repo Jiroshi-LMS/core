@@ -45,6 +45,7 @@
 
 
 ## Architectural Updates
+- [] Change API Key Separator
 - [X] Apply Rate Limiting
 - [X] Apply Anon Throttle
 - [X] API Key Caching

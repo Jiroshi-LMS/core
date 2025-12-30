@@ -156,7 +156,7 @@ def headless_exception_handler(exc, context):
     elif isinstance(exc, ObjectDoesNotExist):
         logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
         return Response(
-            default_response(msg="Resource not found !", error_code=ERR_CODES.RESOURCE_NOT_FOUND), 
+            default_response(msg="Resource not found !", error_code=ERR_CODES.NOT_FOUND_ERR), 
             status=status.HTTP_404_NOT_FOUND
         )
     

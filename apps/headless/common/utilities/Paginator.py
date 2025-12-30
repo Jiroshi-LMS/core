@@ -1,5 +1,7 @@
+from urllib.parse import urlparse, parse_qs
 from rest_framework.pagination import PageNumberPagination, CursorPagination
 from .Response import success
+
 
 
 class HeadlessPageNumberPaginator(PageNumberPagination):
@@ -33,13 +35,22 @@ class HeadlessCursorPagination(CursorPagination):
     cursor_query_param = 'cursor' # Customize the query parameter name from 'cursor' to 'cu'
     offset_cutoff = 3000  # Max number of items in a page before a hard cutoff
 
+    def _extract_cursor(self, link: str | None):
+        if not link:
+            return None
+
+        parsed = urlparse(link)
+        params = parse_qs(parsed.query)
+        return params.get(self.cursor_query_param, [None])[0]
+
+
     def get_paginated_response(self, data, msg="Successfully Fetched", extra: dict = {}):
         next_link = self.get_next_link()
         prev_link = self.get_previous_link()
 
         # Extract the raw cursor value from the full URLs
-        next_cursor = self.extract_cursor_from_url(next_link) if next_link else None
-        prev_cursor = self.extract_cursor_from_url(prev_link, is_previous=True) if prev_link else None
+        next_cursor = self._extract_cursor(next_link) if next_link else None
+        prev_cursor = self._extract_cursor(prev_link) if prev_link else None
 
         return success(data={
             **extra,
