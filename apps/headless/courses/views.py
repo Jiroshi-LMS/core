@@ -6,6 +6,7 @@ from apps.headless.common.permissions import (InstructorAPIKeyAuthentication, St
 from apps.headless.common.utilities.BaseView import HeadlessReadOnlyViewSet, HeadlessAPIView, HeadlessGenericView
 from apps.headless.common.utilities.Response import success
 from apps.headless.common.utilities.Errors import InputValidationError, NotFoundError, ForbiddenError
+from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.mixins import (
@@ -129,7 +130,7 @@ class LessonResourcesView(ListModelMixin, HeadlessGenericView):
     serializer_class = LessonFileResourceListSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = LessonResourcesFilters
-    search_fields = ['title']
+    search_fields = ['title', 'file_type']
     ordering_fields = ['created_at', 'file_size']
     ordering = ['-created_at']
 
@@ -200,15 +201,17 @@ class StudentEnrolledCoursesView(ListModelMixin, HeadlessGenericView):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = EnrolledCourseFilters
     search_fields = ['course__title', 'course__description']
-    ordering_fields = {
-        'enrolled_at': 'created_at',
-        'created_at': 'course__created_at',
-        'duration': 'course__duration',
-    }
+    ordering_fields = ['course_created_at', 'duration', 'enrolled_at']
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return CourseEnrollmentService.get_enrolled_courses_list(self.request.student, self.request.instructor)
+        return CourseEnrollmentService.get_enrolled_courses_list(
+            self.request.student, self.request.instructor
+        ).annotate(
+            course_created_at=F('course__created_at'),
+            duration=F('course__duration'),
+            enrolled_at=F('created_at')
+        )
 
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())

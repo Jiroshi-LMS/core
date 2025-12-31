@@ -100,15 +100,15 @@ class EnrolledCoursesListSerializer(DynamicFieldsMixin, serializers.ModelSeriali
     title = serializers.CharField(source='course.title')
     description = serializers.CharField(source='course.description', required=True)
     thumbnail = serializers.SerializerMethodField(read_only=True)
-    duration = serializers.DecimalField(source='course.duration', max_digits=10, decimal_places=4, required=True)
-    created_at = serializers.DateTimeField(source='course.created_at')
-    enrolled_at = serializers.DateTimeField(source='created_at')
+    duration = serializers.DecimalField(max_digits=10, decimal_places=4, required=True)
+    course_created_at = serializers.DateTimeField()
+    enrolled_at = serializers.DateTimeField()
     
     class Meta:
         model = Enrollments
         fields = [
             'uuid', 'title', 'description',
-            'thumbnail', 'duration', 'created_at', 
+            'thumbnail', 'duration', 'course_created_at', 
             'enrolled_at'
         ]
 
