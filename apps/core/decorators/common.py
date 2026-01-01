@@ -13,7 +13,9 @@ import structlog
 import traceback
 import functools
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 
 def handle_exceptions(view_func):
     @functools.wraps(view_func)
@@ -32,7 +34,8 @@ def handle_exceptions(view_func):
             flat_msg = flatten_serializer_errors(e.detail)
             logger.error(
                 "serializer_validation_failed",
-                error=flat_msg
+                error=flat_msg,
+                extra={'path': request.path, 'stack': err_stack}
             )
             return Res(status.HTTP_400_BAD_REQUEST, False, msg=flat_msg).json()
         except (ObjectDoesNotExist, Http404) as e:

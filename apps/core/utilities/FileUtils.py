@@ -7,7 +7,9 @@ from botocore.exceptions import ClientError
 from apps.core.constants import ENV
 
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 
 
 class S3Utils:
@@ -40,7 +42,6 @@ class S3Utils:
             )
             return url
         except Exception as e:
-            print(traceback.format_exc())
             logger.error(
                 "get_signed_url_failed",
                 error=str(e),
@@ -69,7 +70,6 @@ class S3Utils:
             )
             logger.info("object_keys_deleted", object_keys=object_keys, response=response)
         except Exception as e:
-            print(traceback.format_exc())
             logger.error(
                 "failed_to_delete_object",
                 error=str(e),

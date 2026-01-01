@@ -30,7 +30,9 @@ from .services import (
     LessonResourceServices
 )
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 lesson_selector = LessonSelector()
 resource_selector = LessonResourceSelector()
 

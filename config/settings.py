@@ -12,11 +12,29 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from dotenv import load_dotenv
 import os
+import structlog, logging
 from pathlib import Path
 from datetime import timedelta
 from urllib.parse import urlparse, parse_qsl
 
 load_dotenv()
+
+
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.add_timestamp(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer(),
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    context_class=dict,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    cache_logger_on_first_use=True,
+)
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -293,3 +311,38 @@ SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = not DEBUG  # True in production (HTTPS required)
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS required)
+
+
+# Mailer Settings
+ADMINS = [("Jiroshi Alerts", "app.jiroshi@gmail.com")]
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "app.jiroshi@gmail.com"
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
+
+
+# Logging Config
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+        "mail_admins": {
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+            "include_html": True,
+        },
+    },
+    "loggers": {
+        "jiroshi": {
+            "handlers": ["console", "mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}

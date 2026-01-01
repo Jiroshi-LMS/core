@@ -10,7 +10,9 @@ from rest_framework.serializers import ValidationError
 from rest_framework.views import exception_handler
 from ..constants import ERR_CODES
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 
 
 def extract_integrity_error_context(exc):
@@ -144,7 +146,7 @@ def headless_exception_handler(exc, context):
     
     # Integrity errors (duplicate key, FK violation, etc)
     if isinstance(exc, IntegrityError):
-        logger.exception("IntegrityError", data={"exc": exc})
+        logger.error("IntegrityError", data={"exc": exc})
         msg = extract_integrity_error_context(str(exc))
         msg = msg or "Database integrity error"
         return Response(
@@ -154,7 +156,7 @@ def headless_exception_handler(exc, context):
 
     # Not found raised manually by your domain layer
     elif isinstance(exc, ObjectDoesNotExist):
-        logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
+        logger.error("HeadlessObjectNotFound", data={"exc_info": exc})    
         return Response(
             default_response(msg="Resource not found !", error_code=ERR_CODES.NOT_FOUND_ERR), 
             status=status.HTTP_404_NOT_FOUND
@@ -192,7 +194,7 @@ def headless_exception_handler(exc, context):
             status=response.status_code
         )
     
-    logger.exception("HEADLESS_ERROR", data={"exc_info": exc})    
+    logger.error("HeadlessUnhandledException", data={"exc_info": exc})    
 
     return Response(default_response(), status=500)
 

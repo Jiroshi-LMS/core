@@ -5,7 +5,9 @@ from celery import shared_task
 from django.utils import timezone
 import structlog
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 
 
 @shared_task

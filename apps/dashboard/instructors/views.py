@@ -28,7 +28,9 @@ from .serializers import (
 from .selectors import InstructorSelector
 
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 instructor_selector = InstructorSelector()
     
 

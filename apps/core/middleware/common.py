@@ -10,7 +10,9 @@ from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 import structlog
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 
 
 class APILoggingMiddleware(MiddlewareMixin):
@@ -118,8 +120,8 @@ class APILoggingMiddleware(MiddlewareMixin):
         )
         
         # Track user activity if authenticated
-        if hasattr(request, 'user') and request.user.is_authenticated:
-            self.track_user_activity(request, response, duration)
+        # if hasattr(request, 'user') and request.user.is_authenticated:
+        #     self.track_user_activity(request, response, duration)
         
         return response
     
@@ -150,72 +152,72 @@ class APILoggingMiddleware(MiddlewareMixin):
         
         return None
     
-    def track_user_activity(self, request, response, duration):
-        """
-        Track user activity for analytics and security.
-        """
-        try:
-            from apps.dashboard.instructors.models import InstructorSession
-            from audit.tasks import create_audit_log
+    # def track_user_activity(self, request, response, duration):
+    #     """
+    #     Track user activity for analytics and security.
+    #     """
+    #     try:
+    #         from apps.dashboard.instructors.models import InstructorSession
+    #         from audit.tasks import create_audit_log
             
-            # Track session activity
-            raw_token = None
-            auth_header = request.META.get("HTTP_AUTHORIZATION", None)
-            if auth_header and auth_header.startswith("Bearer "):
-                raw_token = auth_header.split(" ")[1]
+    #         # Track session activity
+    #         raw_token = None
+    #         auth_header = request.META.get("HTTP_AUTHORIZATION", None)
+    #         if auth_header and auth_header.startswith("Bearer "):
+    #             raw_token = auth_header.split(" ")[1]
 
-            # session_key = raw_token
-            session_key = None
-            if session_key:
-                InstructorSession.objects.update_or_create(
-                    session_key=session_key,
-                    defaults={
-                        'instructor': request.user,
-                        'ip_address': self.get_client_ip(request),
-                        'user_agent': request.META.get('HTTP_USER_AGENT', ''),
-                        'is_active': True,
-                        'last_activity': timezone.now(),
-                    }
-                )
+    #         # session_key = raw_token
+    #         session_key = None
+    #         if session_key:
+    #             InstructorSession.objects.update_or_create(
+    #                 session_key=session_key,
+    #                 defaults={
+    #                     'instructor': request.user,
+    #                     'ip_address': self.get_client_ip(request),
+    #                     'user_agent': request.META.get('HTTP_USER_AGENT', ''),
+    #                     'is_active': True,
+    #                     'last_activity': timezone.now(),
+    #                 }
+    #             )
             
-            # Create audit log for significant actions
-            if self.should_audit_action(request, response):
-                create_audit_log.delay(
-                    instructor_id=str(request.user.id),
-                    action=self.determine_action(request),
-                    resource_type=self.determine_resource_type(request),
-                    resource_id=self.extract_resource_id(request),
-                    description=f"{request.method} {request.path}",
-                    ip_address=self.get_client_ip(request),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                    metadata={
-                        'status_code': response.status_code,
-                        'duration_ms': round(duration * 1000, 2),
-                        'request_id': getattr(request, 'request_id', ''),
-                    }
-                )
+    #         # Create audit log for significant actions
+    #         if self.should_audit_action(request, response):
+    #             create_audit_log.delay(
+    #                 instructor_id=str(request.user.id),
+    #                 action=self.determine_action(request),
+    #                 resource_type=self.determine_resource_type(request),
+    #                 resource_id=self.extract_resource_id(request),
+    #                 description=f"{request.method} {request.path}",
+    #                 ip_address=self.get_client_ip(request),
+    #                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
+    #                 metadata={
+    #                     'status_code': response.status_code,
+    #                     'duration_ms': round(duration * 1000, 2),
+    #                     'request_id': getattr(request, 'request_id', ''),
+    #                 }
+    #             )
             
-            # Log user activity to ELK
-            logger.info(
-                "user_activity",
-                instructor=str(request.user.id),
-                username=request.user.username,
-                action=self.determine_action(request),
-                resource=self.determine_resource_type(request),
-                ip_address=self.get_client_ip(request),
-                session_key=session_key,
-                duration_ms=round(duration * 1000, 2),
-                timestamp=timezone.now().isoformat(),
-                log_type="user_activity"
-            )
+    #         # Log user activity to ELK
+    #         logger.info(
+    #             "user_activity",
+    #             instructor=str(request.user.id),
+    #             username=request.user.username,
+    #             action=self.determine_action(request),
+    #             resource=self.determine_resource_type(request),
+    #             ip_address=self.get_client_ip(request),
+    #             session_key=session_key,
+    #             duration_ms=round(duration * 1000, 2),
+    #             timestamp=timezone.now().isoformat(),
+    #             log_type="user_activity"
+    #         )
             
-        except Exception as e:
-            logger.error(
-                "user_activity_tracking_failed",
-                error=str(e),
-                instructor_id=str(request.user.id) if hasattr(request, 'user') else None,
-                log_type="error"
-            )
+    #     except Exception as e:
+    #         logger.error(
+    #             "user_activity_tracking_failed",
+    #             error=str(e),
+    #             instructor_id=str(request.user.id) if hasattr(request, 'user') else None,
+    #             log_type="error"
+    #         )
     
     def should_audit_action(self, request, response):
         """

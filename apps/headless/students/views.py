@@ -16,7 +16,9 @@ from .serializers import (StudentPasswordAuthRequestSerializer, StudentLoginRequ
 from .services import StudentAuthService
 
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 
 
 def get_response(mode: str, access_tok: str, refresh_tok: str):
