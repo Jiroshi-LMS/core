@@ -16,6 +16,7 @@ import structlog, logging
 from pathlib import Path
 from datetime import timedelta
 from urllib.parse import urlparse, parse_qsl
+from apps.core.logging import LOG_QUEUE
 
 load_dotenv()
 
@@ -325,24 +326,27 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
 
 
 # Logging Config
+from apps.core.logging import LOG_QUEUE
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
+        "queue": {
+            "class": "logging.handlers.QueueHandler",
+            "queue": LOG_QUEUE,
+            "level": "ERROR",
+        },
         "console": {
             "class": "logging.StreamHandler",
-        },
-        "mail_admins": {
-            "level": "ERROR",
-            "class": "django.utils.log.AdminEmailHandler",
-            "include_html": True,
         },
     },
     "loggers": {
         "jiroshi": {
-            "handlers": ["console", "mail_admins"],
+            "handlers": ["console", "queue"],
             "level": "ERROR",
             "propagate": False,
         },
     },
 }
+
