@@ -129,12 +129,39 @@ def flatten_serializer_errors(detail, parent_field="") -> str:
         return f"{parent_field}: {detail}" if (parent_field and parent_field != 'non_field_errors') else str(detail)
 
 
+def get_request_log_context(context):
+    """
+    Safely extract request-related metadata for logging.
+
+    This function MUST NEVER raise.
+    """
+    if not context or not isinstance(context, dict):
+        return {}
+
+    request = context.get("request")
+    if request is None:
+        return {}
+
+    try:
+        return {
+            "path": getattr(request, "path", None),
+            "method": getattr(request, "method", None),
+            "query_params": dict(getattr(request, "query_params", {}) or {}),
+            "user_id": getattr(getattr(request, "user", None), "id", None),
+        }
+    except Exception:
+        # Logging must never crash the request lifecycle
+        return {}
+
+
 
 def headless_exception_handler(exc, context):
     """
     Clean, consistent output for ALL headless errors.
     """
     response = exception_handler(exc, context)
+    request_context = get_request_log_context(context)
+    
     def default_response(msg="Internal server error", error_code=ERR_CODES.INTERNAL_ERR):
         return {
             "status": False,
@@ -146,7 +173,7 @@ def headless_exception_handler(exc, context):
     
     # Integrity errors (duplicate key, FK violation, etc)
     if isinstance(exc, IntegrityError):
-        logger.error("IntegrityError", data={"exc": exc})
+        logger.exception("IntegrityError", **request_context, data={"exc_info": exc})
         msg = extract_integrity_error_context(str(exc))
         msg = msg or "Database integrity error"
         return Response(
@@ -156,7 +183,7 @@ def headless_exception_handler(exc, context):
 
     # Not found raised manually by your domain layer
     elif isinstance(exc, ObjectDoesNotExist):
-        logger.error("HeadlessObjectNotFound", data={"exc_info": exc})    
+        logger.exception("HeadlessObjectNotFound", **request_context, data={"exc_info": exc})    
         return Response(
             default_response(msg="Resource not found !", error_code=ERR_CODES.NOT_FOUND_ERR), 
             status=status.HTTP_404_NOT_FOUND
@@ -194,7 +221,7 @@ def headless_exception_handler(exc, context):
             status=response.status_code
         )
     
-    logger.error("HeadlessUnhandledException", data={"exc_info": exc})    
+    logger.exception("HeadlessUnhandledException", **request_context, data={"exc_info": exc})    
 
     return Response(default_response(), status=500)
 

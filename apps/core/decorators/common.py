@@ -24,15 +24,15 @@ def handle_exceptions(view_func):
             return view_func(self, request, *args, **kwargs)
         except ValueError as e:
             err_stack = traceback.format_exc()
-            logger.error("value_error", error=str(e), extra={'path': request.path, 'stack': err_stack})
+            logger.exception("value_error", error=str(e), extra={'path': request.path, 'stack': err_stack})
             return Res(status.HTTP_400_BAD_REQUEST, False, msg=str(e)).json()
         except PermissionDenied as e:
             err_stack = traceback.format_exc()
-            logger.error("permission_denied", error=str(e), extra={'path': request.path, 'stack': err_stack})
+            logger.exception("permission_denied", error=str(e), extra={'path': request.path, 'stack': err_stack})
             return Res(status.HTTP_403_FORBIDDEN, False, msg=str(e)).json()
         except serializers.ValidationError as e:
             flat_msg = flatten_serializer_errors(e.detail)
-            logger.error(
+            logger.exception(
                 "serializer_validation_failed",
                 error=flat_msg,
                 extra={'path': request.path, 'stack': err_stack}
@@ -40,13 +40,13 @@ def handle_exceptions(view_func):
             return Res(status.HTTP_400_BAD_REQUEST, False, msg=flat_msg).json()
         except (ObjectDoesNotExist, Http404) as e:
             err_stack = traceback.format_exc()
-            logger.error("object_not_found", error=str(e), extra={'path': request.path, 'stack': err_stack})
+            logger.exception("object_not_found", error=str(e), extra={'path': request.path, 'stack': err_stack})
             return Res(status.HTTP_404_NOT_FOUND, False, msg="Not found").json()
         except IntegrityError as e:
             err_stack = traceback.format_exc()
             msg=str(e)
             user_msg=extract_integrity_error_context(msg)
-            logger.error("integrity_error", error=msg, extra={'path': request.path, 'stack': err_stack})
+            logger.exception("integrity_error", error=msg, extra={'path': request.path, 'stack': err_stack})
             return Res(status.HTTP_400_BAD_REQUEST, False, msg=user_msg).json()
         except Exception as e:
             err_stack = traceback.format_exc()
