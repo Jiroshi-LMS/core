@@ -327,27 +327,48 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
 
 
 # Logging Config
-if not DEBUG:
-    from apps.core.logging import LOG_QUEUE
-    LOGGING = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "handlers": {
-            "queue": {
-                "class": "logging.handlers.QueueHandler",
-                "queue": LOG_QUEUE,
-                "level": "ERROR",
-            },
-            "console": {
-                "class": "logging.StreamHandler",
-            },
+# if not DEBUG:
+#     from apps.core.logging import LOG_QUEUE
+#     LOGGING = {
+#         "version": 1,
+#         "disable_existing_loggers": False,
+#         "handlers": {
+#             "queue": {
+#                 "class": "logging.handlers.QueueHandler",
+#                 "queue": LOG_QUEUE,
+#                 "level": "ERROR",
+#             },
+#             "console": {
+#                 "class": "logging.StreamHandler",
+#             },
+#         },
+#         "loggers": {
+#             "jiroshi": {
+#                 "handlers": ["console", "queue"],
+#                 "level": "ERROR",
+#                 "propagate": False,
+#             },
+#         },
+#     }
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
         },
-        "loggers": {
-            "jiroshi": {
-                "handlers": ["console", "queue"],
-                "level": "ERROR",
-                "propagate": False,
-            },
+    },
+
+    "loggers": {
+        "jiroshi": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
-    }
+    },
+}
+
 
