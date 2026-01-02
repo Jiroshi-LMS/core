@@ -23,6 +23,14 @@ services:
       - ../.env.prod
     ports:
       - "8000:8000"
+    command: >
+      sh -c "
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application
+        --bind 0.0.0.0:8001
+        --workers 3
+        --threads 2
+      "
     depends_on:
       redis:
         condition: service_healthy
