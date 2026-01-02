@@ -60,7 +60,7 @@ class GetUploadPresignedURL(APIView):
         url = S3Utils.get_signed_url(
             bucket_name=bucket_name,
             object_key=object_key,
-            content_type=content_type,
+            # content_type=content_type,
             is_upload=True
         )
 
