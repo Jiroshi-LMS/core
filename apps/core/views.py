@@ -11,6 +11,10 @@ from apps.dashboard.common.utilities.Response import Res
 
 
 class HealthCheckView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    throttle_classes = []
+    
     def get(self, request):
         return Res(msg="Ok").text()
 
