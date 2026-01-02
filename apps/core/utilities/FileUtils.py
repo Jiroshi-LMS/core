@@ -33,8 +33,8 @@ class S3Utils:
                 'Bucket': bucket_name,
                 'Key': object_key,
             }
-            if content_type is not None:
-                signed_url_params['ContentType'] = content_type
+            # if content_type is not None:
+            #     signed_url_params['ContentType'] = content_type
             url = s3_client.generate_presigned_url(
                 ClientMethod='put_object' if is_upload else 'get_object',
                 Params=signed_url_params,
