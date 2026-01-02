@@ -48,7 +48,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
+DEBUG = os.getenv("DJANGO_DEBUG").lower() == "true"
 
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
@@ -327,27 +327,27 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
 
 
 # Logging Config
-from apps.core.logging import LOG_QUEUE
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "queue": {
-            "class": "logging.handlers.QueueHandler",
-            "queue": LOG_QUEUE,
-            "level": "ERROR",
+if not DEBUG:
+    from apps.core.logging import LOG_QUEUE
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "queue": {
+                "class": "logging.handlers.QueueHandler",
+                "queue": LOG_QUEUE,
+                "level": "ERROR",
+            },
+            "console": {
+                "class": "logging.StreamHandler",
+            },
         },
-        "console": {
-            "class": "logging.StreamHandler",
+        "loggers": {
+            "jiroshi": {
+                "handlers": ["console", "queue"],
+                "level": "ERROR",
+                "propagate": False,
+            },
         },
-    },
-    "loggers": {
-        "jiroshi": {
-            "handlers": ["console", "queue"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-    },
-}
+    }
 
