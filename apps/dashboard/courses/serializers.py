@@ -149,12 +149,12 @@ class LessonResourceSerializer(serializers.ModelSerializer):
 
 
 class LessonTextResourceSerializer(serializers.ModelSerializer):
-    notes = serializers.CharField(required=False)
+    notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     related_links = serializers.JSONField(required=False)
     lesson_uuid = serializers.UUIDField(required=True, write_only=True)
 
     class Meta:
-        model = LessonResource
+        model = CourseLesson
         fields = [
             'uuid', 'created_at', 'notes',
             'related_links', 'lesson_uuid',
