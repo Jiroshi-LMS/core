@@ -37,7 +37,7 @@ def get_response(mode: str, access_tok: str, refresh_tok: str):
             value=refresh_tok,
             httponly=True,
             secure=True,
-            samesite="Lax",
+            samesite="None",
             max_age=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
         )
         return response

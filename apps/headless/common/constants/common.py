@@ -1,4 +1,5 @@
 class TokenTransportMode:
     COOKIE="cookie"
     JSON="json"
-    API="api"
+    NON_BROWSER="non-browser"
+    DEV="dev"
