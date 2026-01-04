@@ -1,5 +1,5 @@
+print(">>> STUDENT REFRESH VIEW MODULE LOADED <<<")
 import structlog
-
 from apps.core.throttles.headless_throttle import StudentAuthBurstThrottle, StudentRateThrottle
 from apps.dashboard.apikeys.constants import KEY_TYPES
 from apps.headless.common.constants import TokenTransportMode
@@ -102,6 +102,7 @@ class StudentExistsLookup(HeadlessAPIView):
     authentication_classes = [InstructorAPIKeyAuthentication]
     access_type = KEY_TYPES.get('pk')
 
+
     def post(self, request):
         identifier = request.data.get('identifier')
         if not identifier:
@@ -114,11 +115,18 @@ class StudentRefreshTokenView(HeadlessAPIView):
     """
     Student Refresh Token
     """
+    authentication_classes = []
     permission_classes = [AllowAny]
     # throttle_classes = [StudentAuthBurstThrottle]
     throttle_classes = []
 
+    def initial(self, request, *args, **kwargs):
+        print("INITIAL CALLED")
+        logger.info("INITIAL CALLED")
+        super().initial(request, *args, **kwargs)
+
     def post(self, request):
+        raise ValueError("THIS IS FOR TESTING")
         print("ENTER VIEW\n\n\n\n")
         logger.info("ENTERVIEW", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"})
         mode = get_refresh_transport_mode(request)
