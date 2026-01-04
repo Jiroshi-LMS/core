@@ -31,6 +31,7 @@ def handle_exceptions(view_func):
             logger.exception("permission_denied", error=str(e), extra={'path': request.path, 'stack': err_stack})
             return Res(status.HTTP_403_FORBIDDEN, False, msg=str(e)).json()
         except serializers.ValidationError as e:
+            err_stack = traceback.format_exc()
             flat_msg = flatten_serializer_errors(e.detail)
             logger.exception(
                 "serializer_validation_failed",
