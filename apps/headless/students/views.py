@@ -115,19 +115,27 @@ class StudentRefreshTokenView(HeadlessAPIView):
     Student Refresh Token
     """
     permission_classes = [AllowAny]
-    throttle_classes = [StudentAuthBurstThrottle]
+    # throttle_classes = [StudentAuthBurstThrottle]
+    throttle_classes = []
 
     def post(self, request):
+        print("ENTER VIEW\n\n\n\n")
+        logger.info("ENTERVIEW", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"})
         mode = get_refresh_transport_mode(request)
+        print("MODEEEEEE\n\n\n\n", mode)
+        logger.info("MODEEEEEE", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", "mode": mode})
         refresh_tok = request.data.get('refresh_token')
         if mode == TokenTransportMode.COOKIE:
             refresh_tok = request.COOKIES.get("student_refresh_token")
-
+        print("REFRESH_TOK_VIEW\n\n\n\n", refresh_tok)
+        logger.info("REFRESH_TOK_VIEW", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", "refresh_tok": refresh_tok})
         if not refresh_tok: 
             raise AuthError("Refresh Token required !")
         student_toks = StudentAuthService.refresh_student_token(
             refresh_tok
         )
+        print("BEFORERESPONSE\n\n\n\n")
+        logger.info("BEFORERESPONSE", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"})
         return get_response(
             mode, 
             student_toks['access'], 
