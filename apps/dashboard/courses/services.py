@@ -1,3 +1,4 @@
+import structlog
 from apps.core.constants import ENV, Units
 from apps.core.utilities import S3Utils
 from django.db import transaction
@@ -11,7 +12,9 @@ from .selectors import (
 )
 
 
-
+logger = structlog.get_logger("jiroshi").bind(
+    module=__name__
+)
 lesson_selector = LessonSelector()
 resource_selector = LessonResourceSelector()
 
@@ -136,7 +139,7 @@ class LessonResourceServices:
     @staticmethod
     def update_text_resource(validated_data: dict, instructor: Instructor) -> CourseLesson:
         lesson = lesson_selector.by_uuid(validated_data['lesson_uuid'], instructor)
-        if validated_data.get('notes'):
+        if 'notes' in validated_data:
             lesson.notes = validated_data.get('notes')
         if validated_data.get('related_links') is not None:
             lesson.related_links = validated_data.get('related_links')
