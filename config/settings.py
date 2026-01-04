@@ -301,6 +301,7 @@ CORS_ALLOW_HEADERS = [
     'origin',
     'user-agent',
     'x-api-key',
+    'X-Client-Type',
     'x-csrftoken',
     'x-requested-with',
 ]
