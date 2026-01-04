@@ -117,16 +117,9 @@ class StudentRefreshTokenView(HeadlessAPIView):
     """
     authentication_classes = []
     permission_classes = [AllowAny]
-    # throttle_classes = [StudentAuthBurstThrottle]
-    throttle_classes = []
-
-    def initial(self, request, *args, **kwargs):
-        print("INITIAL CALLED")
-        logger.info("INITIAL CALLED")
-        super().initial(request, *args, **kwargs)
+    throttle_classes = [StudentAuthBurstThrottle]
 
     def post(self, request):
-        raise ValueError("THIS IS FOR TESTING")
         print("ENTER VIEW\n\n\n\n")
         logger.info("ENTERVIEW", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"})
         mode = get_refresh_transport_mode(request)
