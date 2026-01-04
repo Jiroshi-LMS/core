@@ -66,21 +66,13 @@ class StudentAuthService():
         """
         Always rotates refresh token.
         """
-        print("REFRESH_TOK_SERVICE\n\n\n\n", refresh_tok)
-        logger.info("REFRESH_TOK_SERVICE", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", "refresh_tok": refresh_tok})
         try:
-            print("REFRESH_TOK_SERVICE_TRY\n\n\n\n", refresh_tok)
-            logger.info("REFRESH_TOK_SERVICE_TRY", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", "refresh_tok": refresh_tok})
             serializer = StudentTokenRefreshSerializer(
                 data={"refresh": refresh_tok}
             )
-            print("AFTER_SERIALIZER\n\n\n\n", refresh_tok)
-            logger.info("AFTER_SERIALIZER", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", "refresh_tok": refresh_tok})
-        
+            
             serializer.is_valid(raise_exception=True)
         except (TokenError, InvalidToken) as e:
-            print("REFRESH_TOK_SERVICE_CATCH\n\n\n\n", refresh_tok)
-            logger.info("REFRESH_TOK_SERVICE_CATCH", data={"TEST": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", "refresh_tok": refresh_tok})
             raise AuthError("Invalid or expired refresh token")
 
         data = serializer.validated_data
