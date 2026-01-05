@@ -1,4 +1,3 @@
-print(">>> STUDENT REFRESH VIEW MODULE LOADED <<<")
 import structlog
 from apps.core.throttles.headless_throttle import StudentAuthBurstThrottle, StudentRateThrottle
 from apps.dashboard.apikeys.constants import KEY_TYPES
