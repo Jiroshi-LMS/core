@@ -80,7 +80,8 @@ DASHBOARD_APPS = [
     'apps.dashboard.courses',
     'apps.dashboard.apikeys',
     'apps.dashboard.dashboard',
-    'apps.dashboard.students'
+    'apps.dashboard.students',
+    'apps.dashboard.file_manager',
 ]
 
 HEADLESS_APPS = [
