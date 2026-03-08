@@ -72,19 +72,19 @@ class InstructorViewSet(viewsets.ModelViewSet):
     
     @handle_exceptions
     def list(self, request, *args, **kwargs):
-        return Res(code=404, msg="Endpoint not implemented")
+        return Res(code=404, msg="Endpoint not implemented").json()
     
     @handle_exceptions
     def retrieve(self, request, *args, **kwargs):
-        return Res(code=404, msg="Endpoint not implemented")
+        return Res(code=404, msg="Endpoint not implemented").json()
     
     @handle_exceptions
     def update(self, request, *args, **kwargs):
-        return Res(code=404, msg="Endpoint not implemented")
+        return Res(code=404, msg="Endpoint not implemented").json()
     
     @handle_exceptions
     def partial_update(self, request, *args, **kwargs):
-        return Res(code=404, msg="Endpoint not implemented")
+        return Res(code=404, msg="Endpoint not implemented").json()
 
     @handle_exceptions
     @action(detail=False, methods=['POST'], url_path='login')
