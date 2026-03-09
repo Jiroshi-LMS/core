@@ -217,6 +217,9 @@ REST_FRAMEWORK = {
         "student_auth": "10/min",
         "student_public": "200/min"
     },
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ]
 }
 
 SWAGGER_SETTINGS = {
