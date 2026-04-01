@@ -1,7 +1,6 @@
 """
 Celery tasks for audit app.
 """
-from celery import shared_task
 from django.utils import timezone
 import structlog
 
@@ -10,7 +9,6 @@ logger = structlog.get_logger("jiroshi").bind(
 )
 
 
-@shared_task
 def cleanup_old_audit_logs():
     """
     Clean up old audit logs to maintain database performance.
@@ -38,8 +36,7 @@ def cleanup_old_audit_logs():
         raise
 
 
-@shared_task(bind=True)
-def create_audit_log(self, instructor_id=None, action=None, resource_type=None, resource_id=None, 
+def create_audit_log(instructor_id=None, action=None, resource_type=None, resource_id=None, 
                     resource_name=None, description="", ip_address=None, 
                     user_agent=None, changes=None, metadata=None):
     """
